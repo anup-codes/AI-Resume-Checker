@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Login / Sign Up Demo</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f4f6f8;
+}
+
+.container {
+  background: #fff;
+  width: 340px;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  text-align: center;
+  transition: 0.3s;
+}
+
+h2 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.input-group {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.input-group label {
+  font-size: 14px;
+  color: #555;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  outline: none;
+  transition: 0.3s;
+}
+
+.input-group input:focus {
+  border-color: #4a90e2;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  background: #4a90e2;
+  border: none;
+  color: #fff;
+  font-size: 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #357abd;
+}
+
+.toggle-text {
+  margin-top: 15px;
+  font-size: 13px;
+}
+
+.toggle-text span {
+  color: #4a90e2;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.hidden {
+  display: none;
+}
+
+.success-message {
+  margin-top: 15px;
+  font-size: 14px;
+  color: green;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- Login Form -->
+  <div id="loginForm">
+    <h2>Login</h2>
+    <form onsubmit="login(event)">
+      <div class="input-group">
+        <label>Email</label>
+        <input type="email" id="loginEmail" required>
+      </div>
+
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" required>
+      </div>
+
+      <button type="submit">Login</button>
+    </form>
+
+    <div class="toggle-text">
+      Don't have an account?
+      <span onclick="showSignup()">Sign Up</span>
+    </div>
+  </div>
+
+
+  <!-- Sign Up Form -->
+  <div id="signupForm" class="hidden">
+    <h2>Sign Up</h2>
+    <form onsubmit="signup(event)">
+      <div class="input-group">
+        <label>Name</label>
+        <input type="text" id="signupName" required>
+      </div>
+
+      <div class="input-group">
+        <label>Email</label>
+        <input type="email" id="signupEmail" required>
+      </div>
+
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="signupPassword" required>
+      </div>
+
+      <button type="submit">Create Account</button>
+    </form>
+
+    <div class="toggle-text">
+      Already have an account?
+      <span onclick="showLogin()">Login</span>
+    </div>
+  </div>
+
+  <div class="success-message" id="message"></div>
+
+</div>
+
+
+<script>
+function showSignup() {
+  document.getElementById("loginForm").classList.add("hidden");
+  document.getElementById("signupForm").classList.remove("hidden");
+  document.getElementById("message").innerText = "";
+}
+
+function showLogin() {
+  document.getElementById("signupForm").classList.add("hidden");
+  document.getElementById("loginForm").classList.remove("hidden");
+  document.getElementById("message").innerText = "";
+}
+
+function signup(event) {
+  event.preventDefault();
+
+  const name = document.getElementById("signupName").value;
+  const email = document.getElementById("signupEmail").value;
+
+  document.getElementById("message").innerText =
+    "Account created successfully for " + name + " 🎉";
+
+  showLogin();
+}
+
+function login(event) {
+  event.preventDefault();
+
+  const email = document.getElementById("loginEmail").value;
+
+  document.getElementById("message").innerText =
+    "Welcome back, " + email + " 🚀";
+}
+</script>
+
+</body>
+</html>
