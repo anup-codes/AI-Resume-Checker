@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Login / Sign Up Demo</title>
-<link rel="stylesheet" href="login.css" >
+<link rel="stylesheet" href="login.css">
 </head>
 
 <body>
@@ -16,8 +16,8 @@
     <h2>Login</h2>
     <form onsubmit="login(event)">
       <div class="input-group">
-        <label>Email</label>
-        <input type="email" id="loginEmail" required>
+        <label>Username</label>
+        <input type="text" id="loginUsername" required>
       </div>
 
       <div class="input-group">
@@ -40,13 +40,8 @@
     <h2>Sign Up</h2>
     <form onsubmit="signup(event)">
       <div class="input-group">
-        <label>Name</label>
+        <label>Username</label>
         <input type="text" id="signupName" required>
-      </div>
-
-      <div class="input-group">
-        <label>Email</label>
-        <input type="email" id="signupEmail" required>
       </div>
 
       <div class="input-group">
@@ -66,7 +61,8 @@
   <div class="success-message" id="message"></div>
 
 </div>
-<script src="login.js"> </script>
+
+<script src="login.js"></script>
 
 </body>
 </html>
