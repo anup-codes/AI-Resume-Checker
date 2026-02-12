@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Resume Analyzer</title>
+  <link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+<div class="container" id="container">
+
+  <!-- SIGN UP -->
+  <div class="form-container sign-up-container">
+    <form id="signup-form">
+      <h1>Create Account</h1>
+      <span class="subtitle">Start analyzing resumes with AI</span>
+
+      <input type="text" placeholder="Full Name" required>
+      <input type="email" placeholder="Email Address" required>
+
+      <div class="password-field">
+        <input type="password" id="signupPassword" placeholder="Password" required>
+        <span class="toggle-pass" data-target="signupPassword">👁</span>
+      </div>
+
+      <button type="submit">Create Account</button>
+    </form>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="form-container sign-in-container">
+    <form id="login-form">
+      <h1>Welcome Back</h1>
+      <span class="subtitle">Login to continue</span>
+
+      <input type="email" placeholder="Email Address" required>
+
+      <div class="password-field">
+        <input type="password" id="loginPassword" placeholder="Password" required>
+        <span class="toggle-pass" data-target="loginPassword">👁</span>
+      </div>
+
+      <button type="submit">Login</button>
+    </form>
+  </div>
+
+  <!-- OVERLAY -->
+  <div class="overlay-container">
+    <div class="overlay">
+
+      <div class="overlay-panel overlay-left">
+        <h1>Welcome Back!</h1>
+        <p>Login to access your AI dashboard</p>
+        <button class="ghost" id="signIn">Login</button>
+      </div>
+
+      <div class="overlay-panel overlay-right">
+        <h1>Hello, Future Pro!</h1>
+        <p>Create your account and optimize your resume instantly.</p>
+        <button class="ghost" id="signUp">Sign Up</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="login.js"></script>
+</body>
+</html>
