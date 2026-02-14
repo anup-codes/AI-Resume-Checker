@@ -4,54 +4,130 @@
 <head>
     <meta charset="UTF-8">
     <title>AI Resume Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'dashboard.css' %}">
 </head>
 <body>
 
-<nav class="navbar">
-    <div class="logo">AI Resume Analyzer</div>
-    <div class="nav-right">
-        <span class="username">👤 {{ request.user.username }}</span>
+<header class="header">
+    <div class="brand">
+        <h1>AI Resume Analyzer</h1>
+        <p class="tagline">Clarity. Confidence. Career Growth.</p>
+    </div>
+
+    <div class="user-box">
+        👤 {{ request.user.username }}
         <a href="/logout/" class="logout-btn">Logout</a>
     </div>
-</nav>
+</header>
 
-<div class="dashboard">
+<main class="layout">
 
-    <!-- Upload Section -->
-    <div class="card upload-card">
-        <h2>Upload Your Resume</h2>
+    <!-- PROFILE SETUP -->
+    <section class="card">
+        <p class="section-label">PROFILE SETUP</p>
+        
 
-        <form id="resumeForm" enctype="multipart/form-data">
-            {% csrf_token %}
-            <input type="file" name="resume" required>
-            <button type="submit" class="upload-btn">
-                <span class="btn-text">Upload & Analyze</span>
-                <span class="spinner"></span>
-            </button>
-        </form>
+      <form id="resumeForm" enctype="multipart/form-data">
+      {% csrf_token %}
+
+        <select id="role" name="role" class="select">
+          <option>Frontend Developer</option>
+          <option>Backend Developer</option>
+          <option>Full Stack Developer</option>
+          <option>Software Engineer</option>
+          <option>Data Analyst</option>
+          <option>Data Scientist</option>
+          <option>ML Engineer</option>
+          <option>DevOps Engineer</option>
+        </select>
+
+      <label class="upload-box">
+      <input type="file" id="resume" name="resume" hidden required>
+      <strong id="fileText">Drop your resume</strong>
+      <span>PDF or DOCX • max 2MB</span>
+      </label>
+
+      <button type="submit" class="btn primary" id="analyze">
+      Analyze Resume
+      </button>
+      </form>
 
         <div id="toast" class="toast"></div>
-    </div>
+    </section>
 
-    <!-- AI Score Section -->
-    <div class="card score-card">
-        <h2>AI Resume Score</h2>
-        <div class="score-circle">
-            <span id="scoreValue">--</span>
+
+    <!-- RESUME HEALTH -->
+    <section class="card">
+        <p class="section-label">RESUME HEALTH</p>
+
+        <div class="ai-loader hidden" id="aiLoader">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <p>Analyzing resume with AI…</p>
         </div>
-        <p id="scoreMessage">Upload resume to get AI score</p>
-    </div>
 
-    <!-- Resume History -->
-    <div class="card history-card">
-        <h2>Upload History</h2>
-        <ul id="resumeHistory">
-            <li>No uploads yet</li>
+        <div class="score-ring">
+            <svg width="120" height="120">
+                <circle cx="60" cy="60" r="50"></circle>
+                <circle cx="60" cy="60" r="50" id="progress"></circle>
+            </svg>
+            <div class="score-text">
+                <span id="score">0</span>
+                <small>ATS MATCH</small>
+            </div>
+        </div>
+
+        <p class="description" id="summary">
+            Upload a resume to get AI insights.
+        </p>
+
+        <button class="btn ghost" id="toggleInsights">
+            View Improvements
+        </button>
+    </section>
+
+
+    <!-- INSIGHT PANEL -->
+    <section class="insight-panel hidden" id="insights">
+        <p class="section-label">INSIGHT AREAS</p>
+        <ul class="insight-list">
+            <li class="positive">✔ Skills Coverage</li>
+            <li class="negative">✖ Keyword Gaps</li>
+            <li class="positive">✔ Formatting</li>
+            <li class="negative">✖ Experience Depth</li>
         </ul>
-    </div>
+    </section>
 
-</div>
+
+    <!-- KEYWORD PREVIEW -->
+    <section class="card">
+        <p class="section-label">KEYWORD PREVIEW</p>
+        <p id="resumePreview">
+            Resume text preview will appear here after AI analysis.
+        </p>
+    </section>
+
+
+    <!-- AI ASSISTANT -->
+    <section class="assistant-panel">
+        <p class="assistant-title">AI Career Assistant</p>
+
+        <div class="assistant-window">
+            <p id="aiText">
+                Upload your resume and analyze it to receive guidance.
+            </p>
+        </div>
+
+        <div class="assistant-actions">
+            <button class="assist-btn">Explain my ATS score</button>
+            <button class="assist-btn">How can I improve?</button>
+            <button class="assist-btn">Tips for my role</button>
+        </div>
+    </section>
+
+</main>
 
 <script src="{% static 'dashboard.js' %}"></script>
 </body>

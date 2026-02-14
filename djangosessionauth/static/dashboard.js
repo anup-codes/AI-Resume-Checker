@@ -1,68 +1,84 @@
+const fileInput = document.getElementById("resume");
+const fileText = document.getElementById("fileText");
 const form = document.getElementById("resumeForm");
-const toast = document.getElementById("toast");
-const scoreCircle = document.querySelector(".score-circle");
-const scoreValue = document.getElementById("scoreValue");
-const scoreMessage = document.getElementById("scoreMessage");
-const historyList = document.getElementById("resumeHistory");
 
-function showToast(message, type) {
-    toast.textContent = message;
-    toast.className = "toast show " + type;
-    setTimeout(() => toast.className = "toast", 3000);
+const scoreEl = document.getElementById("score");
+const progress = document.getElementById("progress");
+const summary = document.getElementById("summary");
+const aiLoader = document.getElementById("aiLoader");
+const roleSelect = document.getElementById("role");
+
+/* ===============================
+   FILE UPLOAD DISPLAY
+=============================== */
+fileInput.addEventListener("change", () => {
+  if (fileInput.files.length > 0) {
+    fileText.textContent = fileInput.files[0].name;
+  }
+});
+
+/* ===============================
+   SCORE ANIMATION
+=============================== */
+function animateScore(target) {
+  let current = 0;
+  const max = 314;
+  progress.style.strokeDashoffset = max;
+
+  const interval = setInterval(() => {
+    if (current >= target) {
+      clearInterval(interval);
+      summary.textContent =
+        "Your resume has been analyzed. Focus on keyword optimization and measurable impact.";
+    } else {
+      current++;
+      scoreEl.textContent = current;
+      progress.style.strokeDashoffset = max - (max * current) / 100;
+    }
+  }, 15);
 }
 
-function updateScore(score) {
-    scoreValue.textContent = score + "%";
-    scoreCircle.style.background =
-        `conic-gradient(#4f46e5 ${score}%, #e5e7eb ${score}%)`;
+/* ===============================
+   FORM SUBMIT (REAL BACKEND)
+=============================== */
+form.addEventListener("submit", function (e) {
+  e.preventDefault();
 
-    scoreMessage.textContent =
-        score > 75 ? "Excellent Resume 🔥" :
-        score > 50 ? "Good Resume 👍" :
-        "Needs Improvement ⚠️";
-}
+  const formData = new FormData(form);
 
-form.addEventListener("submit", function(e) {
-    e.preventDefault();
+  aiLoader.classList.remove("hidden");
 
-    const button = form.querySelector(".upload-btn");
-    button.classList.add("loading");
-    button.disabled = true;
+  fetch("/upload-resume/", {
+    method: "POST",
+    body: formData,
+    headers: {
+      "X-CSRFToken": document.querySelector(
+        '[name=csrfmiddlewaretoken]'
+      ).value,
+    },
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      aiLoader.classList.add("hidden");
 
-    const formData = new FormData(form);
-
-    fetch("/upload-resume/", {
-        method: "POST",
-        body: formData,
-        headers: {
-            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
-        }
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === "success") {
-            showToast(data.message, "success");
-
-            // Fake AI Score (replace with real AI later)
-            const randomScore = Math.floor(Math.random() * 40) + 60;
-            updateScore(randomScore);
-
-            // Add to history
-            const li = document.createElement("li");
-            li.textContent = "Resume uploaded - Score: " + randomScore + "%";
-            historyList.prepend(li);
-
-            form.reset();
-        } else {
-            showToast(data.message, "error");
-        }
-
-        button.classList.remove("loading");
-        button.disabled = false;
+      if (data.status === "success") {
+        animateScore(data.score);
+      } else {
+        alert(data.message);
+      }
     })
     .catch(() => {
-        showToast("Upload failed!", "error");
-        button.classList.remove("loading");
-        button.disabled = false;
+      aiLoader.classList.add("hidden");
+      alert("Upload failed!");
     });
+});
+
+/* ===============================
+   INSIGHT TOGGLE
+=============================== */
+const toggleInsights = document.getElementById("toggleInsights");
+const insights = document.getElementById("insights");
+
+toggleInsights.addEventListener("click", () => {
+  insights.classList.toggle("hidden");
 });
