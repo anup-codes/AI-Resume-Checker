@@ -1,95 +1,127 @@
 from django.shortcuts import render, redirect
-from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from .models import *
+from django.http import JsonResponse
 from .models import Resume
 import os
 
+
+# =========================
+# HOME (PROTECTED)
+# =========================
+@login_required(login_url='/auth/')
 def home(request):
     profile = request.user.username
+    return render(request, 'home.html', {"profile": profile})
 
-    return render(request, 'home.html',{"profile":profile})
 
-def login_page(request):
+# =========================
+# AUTH PAGE (AJAX)
+# =========================
+def auth_page(request):
+
+    # 🔥 If already logged in → redirect to home
+    if request.user.is_authenticated:
+        return redirect('/home/')
+
     if request.method == "POST":
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        
-        # Check if a user with the provided username exists
-        if not User.objects.filter(username=username).exists():
-            # Display an error message if the username does not exist
-            messages.error(request, 'Invalid Username')
-            return redirect('/login/')
-        
-        user = authenticate(username=username, password=password)
-        
-        if user is None:
-            # Display an error message if authentication fails (invalid password)
-            messages.error(request, "Invalid Password")
-            return redirect('/login/')
-        else:
+        form_type = request.POST.get("form_type")
+
+        # -------- LOGIN --------
+        if form_type == "login":
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+
+            if not User.objects.filter(username=username).exists():
+                return JsonResponse({
+                    "status": "error",
+                    "message": "Invalid Username"
+                })
+
+            user = authenticate(username=username, password=password)
+
+            if user is None:
+                return JsonResponse({
+                    "status": "error",
+                    "message": "Invalid Password"
+                })
+
             login(request, user)
-            return redirect('/home/')
-    
-    return render(request, 'login.html')
 
-# Define a view function for the registration page
-def register_page(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+            return JsonResponse({
+                "status": "success",
+                "redirect": "/home/"
+            })
 
-        # Username must be unique
-        if User.objects.filter(username=username).exists():
-            messages.error(request, "Username already taken!")
-            return redirect('/register/')
+        # -------- REGISTER --------
+        elif form_type == "register":
+            name = request.POST.get('name')
+            username = request.POST.get('username')
+            email = request.POST.get('email')
+            password = request.POST.get('password')
 
-        # Email must be unique
-        if User.objects.filter(email=email).exists():
-            messages.error(request, "Email already registered!")
-            return redirect('/register/')
+            if User.objects.filter(username=username).exists():
+                return JsonResponse({
+                    "status": "error",
+                    "message": "Username already taken!"
+                })
 
-        # Create user properly
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password,
-            first_name=name  # store full name here
-        )
+            if User.objects.filter(email=email).exists():
+                return JsonResponse({
+                    "status": "error",
+                    "message": "Email already registered!"
+                })
 
-        messages.success(request, "Account created successfully!")
-        return redirect('/login/')
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                first_name=name
+            )
 
-    return render(request, 'register.html')
+            login(request, user)
+
+            return JsonResponse({
+                "status": "success",
+                "redirect": "/home/"
+            })
+
+    return render(request, 'auth.html')
 
 
-@login_required
+# =========================
+# RESUME UPLOAD (PROTECTED)
+# =========================
+@login_required(login_url='/auth/')
 def upload_resume(request):
+
     if request.method == "POST":
         resume_file = request.FILES.get('resume')
 
         if not resume_file:
-            messages.error(request, "No file uploaded.")
-            return redirect('/resume/')
+            return JsonResponse({
+                "status": "error",
+                "message": "No file uploaded."
+            })
 
         ext = os.path.splitext(resume_file.name)[1].lower()
-
         allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png']
 
         if ext not in allowed_extensions:
-            messages.error(request, "Only PDF or image files are allowed.")
-            return redirect('/resume/')
+            return JsonResponse({
+                "status": "error",
+                "message": "Only PDF or image files are allowed."
+            })
 
         Resume.objects.create(
             user=request.user,
             resume=resume_file
         )
 
-        messages.success(request, "Resume uploaded successfully!")
-        return redirect('/resume/')
+        return JsonResponse({
+            "status": "success",
+            "message": "Resume uploaded successfully!"
+        })
 
     return render(request, 'resume.html')
