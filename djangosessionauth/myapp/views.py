@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import JsonResponse
@@ -8,12 +8,11 @@ import os
 
 
 # =========================
-# HOME (PROTECTED)
+# DASHBOARD (PROTECTED)
 # =========================
 @login_required(login_url='/auth/')
-def home(request):
-    profile = request.user.username
-    return render(request, 'home.html', {"profile": profile})
+def dashboard(request):
+    return render(request, 'dashboard.html')
 
 
 # =========================
@@ -21,9 +20,9 @@ def home(request):
 # =========================
 def auth_page(request):
 
-    # 🔥 If already logged in → redirect to home
+    # If already logged in → go to dashboard
     if request.user.is_authenticated:
-        return redirect('/home/')
+        return redirect('/dashboard/')
 
     if request.method == "POST":
         form_type = request.POST.get("form_type")
@@ -51,8 +50,9 @@ def auth_page(request):
 
             return JsonResponse({
                 "status": "success",
-                "redirect": "/home/"
+                "redirect": "/dashboard/"
             })
+
 
         # -------- REGISTER --------
         elif form_type == "register":
@@ -84,14 +84,14 @@ def auth_page(request):
 
             return JsonResponse({
                 "status": "success",
-                "redirect": "/home/"
+                "redirect": "/dashboard/"
             })
 
     return render(request, 'auth.html')
 
 
 # =========================
-# RESUME UPLOAD (PROTECTED)
+# RESUME UPLOAD (AJAX + PROTECTED)
 # =========================
 @login_required(login_url='/auth/')
 def upload_resume(request):
@@ -124,4 +124,14 @@ def upload_resume(request):
             "message": "Resume uploaded successfully!"
         })
 
-    return render(request, 'resume.html')
+    # If someone manually visits /upload/ in browser
+    return redirect('/dashboard/')
+
+
+# =========================
+# LOGOUT
+# =========================
+@login_required(login_url='/auth/')
+def logout_view(request):
+    logout(request)
+    return redirect('/auth/')
