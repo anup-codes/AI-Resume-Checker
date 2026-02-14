@@ -4,6 +4,8 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from .models import *
+from .models import Resume
+import os
 
 def home(request):
     profile = request.user.username
@@ -36,32 +38,58 @@ def login_page(request):
 # Define a view function for the registration page
 def register_page(request):
     if request.method == 'POST':
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
+        name = request.POST.get('name')
         username = request.POST.get('username')
+        email = request.POST.get('email')
         password = request.POST.get('password')
-        
-        # Check if a user with the provided username already exists
-        user = User.objects.filter(username=username)
-        
-        if user.exists():
-            # Display an information message if the username is taken
-            messages.info(request, "Username already taken!")
+
+        # Username must be unique
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username already taken!")
             return redirect('/register/')
-        
-        # Create a new User object with the provided information
+
+        # Email must be unique
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "Email already registered!")
+            return redirect('/register/')
+
+        # Create user properly
         user = User.objects.create_user(
-            first_name=first_name,
-            last_name=last_name,
-            username=username
+            username=username,
+            email=email,
+            password=password,
+            first_name=name  # store full name here
         )
-        
-        # Set the user's password and save the user object
-        user.set_password(password)
-        user.save()
-        
-        # Display an information message indicating successful account creation
-        messages.info(request, "Account created Successfully!")
-        return redirect('/register/')
-    
+
+        messages.success(request, "Account created successfully!")
+        return redirect('/login/')
+
     return render(request, 'register.html')
+
+
+@login_required
+def upload_resume(request):
+    if request.method == "POST":
+        resume_file = request.FILES.get('resume')
+
+        if not resume_file:
+            messages.error(request, "No file uploaded.")
+            return redirect('/resume/')
+
+        ext = os.path.splitext(resume_file.name)[1].lower()
+
+        allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png']
+
+        if ext not in allowed_extensions:
+            messages.error(request, "Only PDF or image files are allowed.")
+            return redirect('/resume/')
+
+        Resume.objects.create(
+            user=request.user,
+            resume=resume_file
+        )
+
+        messages.success(request, "Resume uploaded successfully!")
+        return redirect('/resume/')
+
+    return render(request, 'resume.html')
