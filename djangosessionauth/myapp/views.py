@@ -9,20 +9,63 @@ import os
 from .ai_utils import analyze_resume
 from .models import Resume
 
+@login_required
 def resume_analysis_view(request):
-    resume = Resume.objects.filter(user=request.user).last()
+    if request.method == "POST" and request.FILES.get("resume"):
 
-    if not resume:
-        return render(request, "analysis.html", {"result": "No resume uploaded."})
+        resume_file = request.FILES["resume"]
 
-    result = analyze_resume(resume.resume.path)
+        resume_instance = Resume.objects.create(
+            user=request.user,
+            resume=resume_file
+        )
 
-    return render(request, "analysis.html", {"result": result})
+        result = analyze_resume(resume_instance.resume.path)
+
+        return render(request, "analysis.html", {"result": result})
+
+    return render(request, "dashboard.html")
+
+
+def upload_resume(request):
+    if request.method == "POST":
+        resume_file = request.FILES.get('resume')
+
+        if not resume_file:
+            messages.error(request, "No file uploaded.")
+            return redirect('upload_resume')
+
+        ext = resume_file.name.split('.')[-1].lower()
+        if ext not in ['pdf', 'jpg', 'jpeg', 'png']:
+            messages.error(request, "Only PDF or image files are allowed.")
+            return redirect('upload_resume')
+
+        Resume.objects.create(user=request.user, resume=resume_file)
+        messages.success(request, "Resume uploaded successfully!")
+        return redirect('analysis')
+
+    return render(request, 'resume.html')
 
 
 
 @login_required
 def dashboard_view(request):
+    if request.method == "POST":
+        resume_file = request.FILES.get('resume')
+
+        if not resume_file:
+            messages.error(request, "No file uploaded.")
+            return redirect('upload_resume')
+
+        ext = resume_file.name.split('.')[-1].lower()
+        if ext not in ['pdf', 'jpg', 'jpeg', 'png']:
+            messages.error(request, "Only PDF or image files are allowed.")
+            return redirect('upload_resume')
+
+        Resume.objects.create(user=request.user, resume=resume_file)
+        messages.success(request, "Resume uploaded successfully!")
+        return redirect('analysis')
+
     return render(request, "dashboard.html")
 
 

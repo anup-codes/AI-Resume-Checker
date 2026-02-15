@@ -1,0 +1,13 @@
+<h2>Final ATS Score</h2>
+<p>{{ result.weighted_score }}</p>
+
+<ul>
+    <li>Technical Skills: {{ result.breakdown.technical_skills }}/20</li>
+    <li>Projects: {{ result.breakdown.projects }}/20</li>
+    <li>Experience Depth: {{ result.breakdown.experience_depth }}/20</li>
+    <li>Keywords: {{ result.breakdown.keywords }}/20</li>
+    <li>Presentation: {{ result.breakdown.presentation }}/20</li>
+</ul>
+
+<h3>Full AI Analysis</h3>
+<pre>{{ result.raw_analysis }}</pre>

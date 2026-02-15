@@ -23,7 +23,7 @@
     <div class="card upload-card">
         <h2>Upload Your Resume</h2>
 
-        <form id="resumeForm" enctype="multipart/form-data">
+        <form id="resumeForm" enctype="multipart/form-data" method="post">
             {% csrf_token %}
             <input type="file" name="resume" required>
             <button type="submit" class="upload-btn">
