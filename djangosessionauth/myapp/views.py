@@ -1,16 +1,27 @@
 from django.shortcuts import render, redirect
-from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from .models import *
+from django.contrib import messages
 from .models import Resume
+from .models import *
 import os
+from .ai_utils import analyze_resume
+from .models import Resume
+
+def resume_analysis_view(request):
+    resume = Resume.objects.filter(user=request.user).last()
+
+    if not resume:
+        return render(request, "analysis.html", {"result": "No resume uploaded."})
+
+    result = analyze_resume(resume.resume.path)
+
+    return render(request, "analysis.html", {"result": result})
+
 
 def home(request):
-    profile = request.user.username
-
-    return render(request, 'home.html',{"profile":profile})
+    return render(request, 'home.html')
 
 def login_page(request):
     if request.method == "POST":
@@ -36,60 +47,38 @@ def login_page(request):
     return render(request, 'login.html')
 
 # Define a view function for the registration page
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.shortcuts import render, redirect
+
 def register_page(request):
     if request.method == 'POST':
         name = request.POST.get('name')
-        username = request.POST.get('username')
         email = request.POST.get('email')
+        username = request.POST.get('username')
         password = request.POST.get('password')
 
-        # Username must be unique
+        # Check if username already exists
         if User.objects.filter(username=username).exists():
             messages.error(request, "Username already taken!")
             return redirect('/register/')
 
-        # Email must be unique
+        # Check if email already exists
         if User.objects.filter(email=email).exists():
             messages.error(request, "Email already registered!")
             return redirect('/register/')
 
-        # Create user properly
+        # Create user
         user = User.objects.create_user(
             username=username,
             email=email,
-            password=password,
-            first_name=name  # store full name here
+            first_name=name  # storing full name here
         )
+
+        user.set_password(password)
+        user.save()
 
         messages.success(request, "Account created successfully!")
-        return redirect('/login/')
+        return redirect('/register/')
 
     return render(request, 'register.html')
-
-
-@login_required
-def upload_resume(request):
-    if request.method == "POST":
-        resume_file = request.FILES.get('resume')
-
-        if not resume_file:
-            messages.error(request, "No file uploaded.")
-            return redirect('/resume/')
-
-        ext = os.path.splitext(resume_file.name)[1].lower()
-
-        allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png']
-
-        if ext not in allowed_extensions:
-            messages.error(request, "Only PDF or image files are allowed.")
-            return redirect('/resume/')
-
-        Resume.objects.create(
-            user=request.user,
-            resume=resume_file
-        )
-
-        messages.success(request, "Resume uploaded successfully!")
-        return redirect('/resume/')
-
-    return render(request, 'resume.html')
