@@ -1,0 +1,60 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Resume Dashboard</title>
+   <link rel="stylesheet" href="{% static 'dashboard.css' %}">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="logo">AI Resume Analyzer</div>
+    <div class="nav-right">
+        <span class="username">👤 {{ request.user.username }}</span>
+        <a href="/logout/" class="logout-btn">Logout</a>
+    </div>
+</nav>
+
+<div class="dashboard">
+
+    <!-- Upload Section -->
+    <div class="card upload-card">
+        <h2>Upload Your Resume</h2>
+
+        <form id="resumeForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="resume" required>
+            <button type="submit" class="upload-btn">
+                <span class="btn-text">Upload & Analyze</span>
+                <span class="spinner"></span>
+            </button>
+        </form>
+
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <!-- AI Score Section -->
+    <div class="card score-card">
+        <h2>AI Resume Score</h2>
+        <div class="score-circle">
+            <span id="scoreValue">--</span>
+        </div>
+        <p id="scoreMessage">Upload resume to get AI score</p>
+    </div>
+
+    <!-- Resume History -->
+    <div class="card history-card">
+        <h2>Upload History</h2>
+        <ul id="resumeHistory">
+            <li>No uploads yet</li>
+        </ul>
+    </div>
+
+</div>
+
+<script src="{% static 'dashboard.js' %}"></script>
+</body>
+</html>
+

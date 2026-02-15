@@ -20,65 +20,58 @@ def resume_analysis_view(request):
     return render(request, "analysis.html", {"result": result})
 
 
-def home(request):
-    return render(request, 'home.html')
 
-def login_page(request):
+@login_required
+def dashboard_view(request):
+    return render(request, "dashboard.html")
+
+
+def auth_page(request):
+
+    # If already logged in → go to dashboard
+    if request.user.is_authenticated:
+        return redirect("dashboard")   # using URL name (recommended)
+
     if request.method == "POST":
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        
-        # Check if a user with the provided username exists
-        if not User.objects.filter(username=username).exists():
-            # Display an error message if the username does not exist
-            messages.error(request, 'Invalid Username')
-            return redirect('/login/')
-        
-        user = authenticate(username=username, password=password)
-        
-        if user is None:
-            # Display an error message if authentication fails (invalid password)
-            messages.error(request, "Invalid Password")
-            return redirect('/login/')
-        else:
+        form_type = request.POST.get("form_type")
+
+        # ---------------- REGISTER ----------------
+        if form_type == "register":
+            name = request.POST.get("name")
+            username = request.POST.get("username")
+            email = request.POST.get("email")
+            password = request.POST.get("password")
+
+            if User.objects.filter(username=username).exists():
+                messages.error(request, "Username already taken")
+                return redirect("auth")
+
+            if User.objects.filter(email=email).exists():
+                messages.error(request, "Email already registered")
+                return redirect("auth")
+
+            User.objects.create_user(
+                username=username,
+                email=email,
+                first_name=name,
+                password=password
+            )
+
+            messages.success(request, "Account created successfully")
+            return redirect("auth")
+
+        # ---------------- LOGIN ----------------
+        elif form_type == "login":
+            username = request.POST.get("username")
+            password = request.POST.get("password")
+
+            user = authenticate(request, username=username, password=password)
+
+            if user is None:
+                messages.error(request, "Invalid username or password")
+                return redirect("auth")
+
             login(request, user)
-            return redirect('/home/')
-    
-    return render(request, 'login.html')
+            return redirect("dashboard")
 
-# Define a view function for the registration page
-from django.contrib.auth.models import User
-from django.contrib import messages
-from django.shortcuts import render, redirect
-
-def register_page(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-
-        # Check if username already exists
-        if User.objects.filter(username=username).exists():
-            messages.error(request, "Username already taken!")
-            return redirect('/register/')
-
-        # Check if email already exists
-        if User.objects.filter(email=email).exists():
-            messages.error(request, "Email already registered!")
-            return redirect('/register/')
-
-        # Create user
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            first_name=name  # storing full name here
-        )
-
-        user.set_password(password)
-        user.save()
-
-        messages.success(request, "Account created successfully!")
-        return redirect('/register/')
-
-    return render(request, 'register.html')
+    return render(request, "auth.html")
