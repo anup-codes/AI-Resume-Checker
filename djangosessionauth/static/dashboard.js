@@ -1,24 +1,27 @@
+/* =========================================
+   AI RESUME DASHBOARD CONTROLLER
+   Clean • Tactical • SaaS-Ready
+========================================= */
+
 /* ===============================
-   ELEMENT REFERENCES
+   DOM REFERENCES
 =============================== */
 const fileInput = document.getElementById("resume");
 const fileText = document.getElementById("fileText");
 const form = document.getElementById("resumeForm");
-
-const scoreEl = document.getElementById("score");
-const progress = document.getElementById("progress");
 const summary = document.getElementById("summary");
 const aiLoader = document.getElementById("aiLoader");
 const roleSelect = document.getElementById("role");
-
 const toggleInsights = document.getElementById("toggleInsights");
 const insights = document.getElementById("insights");
 const themeToggle = document.getElementById("themeToggle");
+const readinessValue = document.querySelector(".score-value");
+const toast = document.getElementById("toast");
 
 /* ===============================
-   FILE UPLOAD DISPLAY
+   FILE NAME DISPLAY
 =============================== */
-if (fileInput) {
+if (fileInput && fileText) {
   fileInput.addEventListener("change", () => {
     if (fileInput.files.length > 0) {
       fileText.textContent = fileInput.files[0].name;
@@ -27,10 +30,9 @@ if (fileInput) {
 }
 
 /* ===============================
-   PREMIUM TOAST SYSTEM
+   PREMIUM TOAST
 =============================== */
-function showToast(message, type = "success") {
-  const toast = document.getElementById("toast");
+function showToast(message) {
   if (!toast) return;
 
   toast.textContent = message;
@@ -42,30 +44,24 @@ function showToast(message, type = "success") {
 }
 
 /* ===============================
-   SMOOTH SCORE ANIMATION
+   READINESS COUNTER ANIMATION
 =============================== */
-function animateScore(target) {
-  let start = 0;
-  const duration = 1500;
-  const max = 314;
+function animateReadiness(target) {
+  if (!readinessValue) return;
+
+  let current = 0;
+  const duration = 1200;
   const startTime = performance.now();
 
-  function update(currentTime) {
-    const progressTime = currentTime - startTime;
-    const percentage = Math.min(progressTime / duration, 1);
-
-    const eased = 1 - Math.pow(1 - percentage, 3);
+  function update(time) {
+    const progress = Math.min((time - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
     const value = Math.floor(eased * target);
 
-    scoreEl.textContent = value;
-    progress.style.strokeDashoffset = max - (max * value) / 100;
+    readinessValue.textContent = value + "%";
 
-    if (percentage < 1) {
+    if (progress < 1) {
       requestAnimationFrame(update);
-    } else {
-      aiTypingEffect(
-        "Your resume has been analyzed successfully. Improve measurable achievements and optimize role-specific keywords."
-      );
     }
   }
 
@@ -75,7 +71,7 @@ function animateScore(target) {
 /* ===============================
    AI TYPING EFFECT
 =============================== */
-function aiTypingEffect(text) {
+function aiTyping(text) {
   if (!summary) return;
 
   summary.textContent = "";
@@ -83,9 +79,9 @@ function aiTypingEffect(text) {
 
   function type() {
     if (index < text.length) {
-      summary.textContent += text.charAt(index);
+      summary.textContent += text[index];
       index++;
-      setTimeout(type, 20);
+      setTimeout(type, 18);
     }
   }
 
@@ -93,67 +89,68 @@ function aiTypingEffect(text) {
 }
 
 /* ===============================
-   METRIC COUNTERS (TOP CARDS)
+   ROLE-BASED ACCENT SYSTEM
 =============================== */
-document.querySelectorAll("[data-count]").forEach((counter) => {
-  const target = +counter.getAttribute("data-count");
-  let current = 0;
+if (roleSelect) {
+  roleSelect.addEventListener("change", () => {
+    const role = roleSelect.value.toLowerCase();
+    let accent = "#F4B400"; // default gold
 
-  const updateCounter = () => {
-    const increment = target / 80;
-    current += increment;
+    if (role.includes("data")) accent = "#00C2FF";
+    if (role.includes("frontend")) accent = "#00FF9C";
+    if (role.includes("backend")) accent = "#FF5C8D";
+    if (role.includes("devops")) accent = "#9C6BFF";
+    if (role.includes("ml")) accent = "#FF8C00";
 
-    if (current < target) {
-      counter.innerText = Math.floor(current);
-      requestAnimationFrame(updateCounter);
-    } else {
-      counter.innerText = target;
-    }
-  };
-
-  updateCounter();
-});
+    document.documentElement.style.setProperty("--accent", accent);
+  });
+}
 
 /* ===============================
-   FORM SUBMIT (REAL BACKEND)
+   FORM SUBMIT HANDLER
 =============================== */
 if (form) {
-  form.addEventListener("submit", function (e) {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const formData = new FormData(form);
-
-    aiLoader?.classList.remove("hidden");
-
     const button = document.getElementById("analyze");
-    button?.classList.add("loading");
 
-    fetch("/upload-resume/", {
-      method: "POST",
-      body: formData,
-      headers: {
-        "X-CSRFToken": document.querySelector(
-          "[name=csrfmiddlewaretoken]"
-        ).value,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        aiLoader?.classList.add("hidden");
-        button?.classList.remove("loading");
+    try {
+      aiLoader?.classList.remove("hidden");
+      button?.classList.add("loading");
 
-        if (data.status === "success") {
-          showToast("Resume analyzed successfully 🎯");
-          animateScore(data.score);
-        } else {
-          showToast(data.message || "Something went wrong", "error");
-        }
-      })
-      .catch(() => {
-        aiLoader?.classList.add("hidden");
-        button?.classList.remove("loading");
-        showToast("Upload failed. Try again.");
+      const response = await fetch("/upload-resume/", {
+        method: "POST",
+        body: formData,
+        headers: {
+          "X-CSRFToken": document.querySelector(
+            "[name=csrfmiddlewaretoken]"
+          ).value,
+        },
       });
+
+      const data = await response.json();
+
+      aiLoader?.classList.add("hidden");
+      button?.classList.remove("loading");
+
+      if (data.status === "success") {
+        showToast("Analysis complete");
+        animateReadiness(data.score);
+
+        aiTyping(
+          "Analysis complete. Optimize keyword density, add measurable achievements, and strengthen impact statements."
+        );
+      } else {
+        showToast(data.message || "Analysis failed");
+      }
+
+    } catch (error) {
+      aiLoader?.classList.add("hidden");
+      button?.classList.remove("loading");
+      showToast("Upload failed. Try again.");
+    }
   });
 }
 
@@ -170,7 +167,28 @@ if (toggleInsights && insights) {
    DARK MODE TOGGLE
 =============================== */
 if (themeToggle) {
-  themeToggle.addEventListener("change", function () {
+  themeToggle.addEventListener("change", () => {
     document.body.classList.toggle("light");
   });
 }
+
+/* ===============================
+   METRIC AUTO COUNTERS
+=============================== */
+document.querySelectorAll("[data-count]").forEach((el) => {
+  const target = +el.getAttribute("data-count");
+  let current = 0;
+
+  function update() {
+    current += target / 60;
+
+    if (current < target) {
+      el.textContent = Math.floor(current);
+      requestAnimationFrame(update);
+    } else {
+      el.textContent = target;
+    }
+  }
+
+  update();
+});
