@@ -1,0 +1,132 @@
+/* ================= ATS RESULT PAGE ================= */
+
+.ats-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px;
+  min-height: 700px;
+}
+
+.ats-content {
+  width: 100%;
+  max-width: 900px;
+  z-index: 2;
+  position: relative;
+}
+
+/* Title */
+.ats-title {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 35px;
+  color: #F5E6A8;
+}
+
+/* Score Box */
+.score-box {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.score-circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: radial-gradient(circle at top, #D4AF37, #B9962E);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  font-weight: 600;
+  color: #0F0F0F;
+  box-shadow: 0 15px 40px rgba(212,175,55,0.3);
+  transition: 0.4s ease;
+}
+
+.score-circle:hover {
+  transform: scale(1.05);
+}
+
+/* Breakdown List */
+.score-breakdown {
+  list-style: none;
+  margin-top: 20px;
+  margin-bottom: 50px;
+}
+
+.score-breakdown li {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 20px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.05);
+  transition: 0.3s ease;
+}
+
+.score-breakdown li:hover {
+  border-color: #D4AF37;
+  background: rgba(212,175,55,0.05);
+}
+
+.score-breakdown span:first-child {
+  opacity: 0.8;
+}
+
+.score-breakdown span:last-child {
+  font-weight: 600;
+  color: #F5E6A8;
+}
+
+/* Analysis Section */
+.analysis-title {
+  font-size: 22px;
+  margin-bottom: 20px;
+  color: #F5E6A8;
+}
+
+.analysis-box {
+  background: rgba(255,255,255,0.04);
+  border-radius: 16px;
+  padding: 25px;
+  border: 1px solid rgba(255,255,255,0.06);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* Scrollbar Styling */
+.analysis-box::-webkit-scrollbar {
+  width: 8px;
+}
+
+.analysis-box::-webkit-scrollbar-thumb {
+  background: #D4AF37;
+  border-radius: 10px;
+}
+
+.analysis-box pre {
+  white-space: pre-wrap;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #EAEAEA;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+
+  .score-circle {
+    width: 120px;
+    height: 120px;
+    font-size: 28px;
+  }
+
+  .ats-content {
+    padding: 20px;
+  }
+
+}
