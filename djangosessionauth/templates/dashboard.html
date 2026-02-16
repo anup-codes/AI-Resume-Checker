@@ -20,20 +20,99 @@
 <div class="dashboard">
 
     <!-- Upload Section -->
-    <div class="card upload-card">
-        <h2>Upload Your Resume</h2>
+<div class="card upload-card">
+    <h2>Upload Your Resume</h2>
 
-        <form id="resumeForm" enctype="multipart/form-data" method="post">
-            {% csrf_token %}
-            <input type="file" name="resume" required>
-            <button type="submit" class="upload-btn">
-                <span class="btn-text">Upload & Analyze</span>
-                <span class="spinner"></span>
-            </button>
-        </form>
+    <form method="POST" action="{% url 'analysis' %}" enctype="multipart/form-data">
+        {% csrf_token %}
 
-        <div id="toast" class="toast"></div>
-    </div>
+        <!-- Survey Section -->
+<div class="survey-section">
+
+    <h3>Target Role</h3>
+    <label>
+        <input type="radio" name="target_role" value="backend" required>
+        Backend Developer
+    </label><br>
+
+    <label>
+        <input type="radio" name="target_role" value="frontend">
+        Frontend Developer
+    </label><br>
+
+    <label>
+        <input type="radio" name="target_role" value="android">
+        Android Developer
+    </label><br>
+
+    <label>
+        <input type="radio" name="target_role" value="ml">
+        Machine Learning Engineer
+    </label><br>
+
+    <label>
+        <input type="radio" name="target_role" value="data">
+        Data Analyst
+    </label><br>
+
+
+    <h3>Experience Level</h3>
+    <label>
+        <input type="radio" name="experience_level" value="fresher" required>
+        Fresher
+    </label><br>
+
+    <label>
+        <input type="radio" name="experience_level" value="junior">
+        1-3 Years
+    </label><br>
+
+    <label>
+        <input type="radio" name="experience_level" value="mid">
+        3-5 Years
+    </label><br>
+
+    <label>
+        <input type="radio" name="experience_level" value="senior">
+        5+ Years
+    </label><br>
+
+
+    <h3>Company Type</h3>
+    <label>
+        <input type="radio" name="company_type" value="startup" required>
+        Startup
+    </label><br>
+
+    <label>
+        <input type="radio" name="company_type" value="product">
+        Product Based
+    </label><br>
+
+    <label>
+        <input type="radio" name="company_type" value="service">
+        Service Based
+    </label><br>
+
+    <label>
+        <input type="radio" name="company_type" value="faang">
+        FAANG
+    </label><br>
+
+</div>
+
+
+        <!-- Resume Upload -->
+        <input type="file" name="resume" required>
+
+        <button type="submit" class="upload-btn">
+            <span class="btn-text">Upload & Analyze</span>
+            <span class="spinner"></span>
+        </button>
+    </form>
+
+    <div id="toast" class="toast"></div>
+</div>
 
     <!-- AI Score Section -->
     <div class="card score-card">

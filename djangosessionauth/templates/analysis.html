@@ -8,6 +8,11 @@
     <li>Keywords: {{ result.breakdown.keywords }}/20</li>
     <li>Presentation: {{ result.breakdown.presentation }}/20</li>
 </ul>
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
 
+    
+   
 <h3>Full AI Analysis</h3>
 <pre>{{ result.raw_analysis }}</pre>
+

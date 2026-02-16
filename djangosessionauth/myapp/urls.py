@@ -10,7 +10,6 @@ from django.conf.urls.static import static
 # Define URL patterns
 urlpatterns = [
     path("admin/", admin.site.urls),                     # Admin interface
-    path('resume/', upload_resume, name='upload_resume'),# Resume page
     path("auth/", auth_page, name="auth"),               # auth page
     path("dashboard/", dashboard_view, name="dashboard"),# dashboard page
     path('resume/', upload_resume, name='upload_resume'),# upload resume

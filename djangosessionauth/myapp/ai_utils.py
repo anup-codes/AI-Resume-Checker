@@ -1,6 +1,7 @@
 import PyPDF2
 import re
 from google import genai
+import os
 
 
 def extract_pdf_text(file_path):
@@ -12,17 +13,24 @@ def extract_pdf_text(file_path):
     return text
 
 
-def analyze_resume(file_path):
-    client = genai.Client(api_key="AIzaSyDwSFqeYM8-YIsciytKpV6RgUo68BxBZLQ")
+def analyze_resume(file_path, target_role, experience_level, company_type):
+
+
+    client = genai.Client(
+    api_key=os.getenv("GEMINI_API_KEY")
+)
+
 
     resume_text = extract_pdf_text(file_path)
 
     prompt = f"""
 You are an Applicant Tracking System (ATS) used by leading technology companies.
 
-The candidate is targeting the role of: sde.
+Candidate Target Role: {target_role}
+Experience Level: {experience_level}
+Target Company Type: {company_type}
 
-Use widely accepted industry expectations for professional in this role within the Computer Science domain.
+Use widely accepted industry expectations for professional in this role within the {target_role} and {experience_level} in {company_type}.
 
 Evaluate the resume based on:
 
