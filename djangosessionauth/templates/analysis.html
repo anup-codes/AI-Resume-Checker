@@ -4,16 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analysis</title>
-
+    <title>ATS Analysis</title>
     <link rel="stylesheet" href="{% static 'analysis.css' %}">
 </head>
 
 <body>
 
-<div class="container ats-container">
+<section class="ats-page">
 
-  <div class="ats-content">
+  <div class="ats-card">
     
     <h2 class="ats-title">Final ATS Score</h2>
     
@@ -24,26 +23,11 @@
     </div>
 
     <ul class="score-breakdown">
-        <li>
-            <span>Technical Skills</span>
-            <span>{{ result.breakdown.technical_skills }}/20</span>
-        </li>
-        <li>
-            <span>Projects</span>
-            <span>{{ result.breakdown.projects }}/20</span>
-        </li>
-        <li>
-            <span>Experience Depth</span>
-            <span>{{ result.breakdown.experience_depth }}/20</span>
-        </li>
-        <li>
-            <span>Keywords</span>
-            <span>{{ result.breakdown.keywords }}/20</span>
-        </li>
-        <li>
-            <span>Presentation</span>
-            <span>{{ result.breakdown.presentation }}/20</span>
-        </li>
+        <li><span>Technical Skills</span><span>{{ result.breakdown.technical_skills }}/20</span></li>
+        <li><span>Projects</span><span>{{ result.breakdown.projects }}/20</span></li>
+        <li><span>Experience Depth</span><span>{{ result.breakdown.experience_depth }}/20</span></li>
+        <li><span>Keywords</span><span>{{ result.breakdown.keywords }}/20</span></li>
+        <li><span>Presentation</span><span>{{ result.breakdown.presentation }}/20</span></li>
     </ul>
 
     <h3 class="analysis-title">Full AI Analysis</h3>
@@ -54,7 +38,7 @@
 
   </div>
 
-</div>
+</section>
 
 </body>
 </html>
