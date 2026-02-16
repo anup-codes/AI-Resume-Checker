@@ -1,109 +1,248 @@
+/* ================= GOOGLE FONTS ================= */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
-body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background: #f4f6f9;
+/* ================= RESET ================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
+/* ================= DARK SaaS BACKGROUND ================= */
+body {
+  font-family: 'Inter', sans-serif;
+  background: radial-gradient(circle at 15% 20%, #1a1a1a, #0b0b0b 60%);
+  min-height: 100vh;
+  color: #F5F5F5;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Ambient gold glow */
+body::before {
+  content: "";
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(212,175,55,0.12), transparent 70%);
+  top: -200px;
+  right: -200px;
+  animation: floatGlow 8s ease-in-out infinite alternate;
+  z-index: 0;
+}
+
+@keyframes floatGlow {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(50px); }
+}
+
+/* ================= NAVBAR (PRO STYLE) ================= */
 .navbar {
-    background: #111827;
-    color: white;
-    padding: 15px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  width: 100%;
+  padding: 30px 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 5;
 }
 
 .logo {
-    font-weight: bold;
-    font-size: 18px;
+  font-size: 22px;
+  font-weight: 600;
+  background: linear-gradient(90deg, #D4AF37, #F5E6A8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
 .logout-btn {
-    color: #ff4d4d;
-    text-decoration: none;
-    margin-left: 20px;
+  text-decoration: none;
+  color: #D4AF37;
+  font-weight: 500;
+  transition: 0.3s ease;
 }
 
+.logout-btn:hover {
+  opacity: 0.7;
+}
+
+/* ================= DASHBOARD GRID ================= */
 .dashboard {
-    padding: 40px;
-    display: grid;
-    gap: 30px;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 30px;
+  padding: 40px 60px 60px;
+  position: relative;
+  z-index: 2;
 }
 
+/* ================= GLASSMORPHISM CARDS ================= */
 .card {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-    transition: transform 0.3s ease;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border-radius: 26px;
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 32px;
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: visible;
+  position: relative;
+  z-index: 1;
+}
+
+/* subtle inner glow */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right,
+      rgba(212,175,55,0.08),
+      transparent 60%);
+  opacity: 0;
+  transition: 0.4s ease;
+   z-index: 0;
+  pointer-events: none;
+}
+
+.card:hover::after {
+  opacity: 1;
 }
 
 .card:hover {
-    transform: translateY(-5px);
+  transform: translateY(-8px);
+  box-shadow:
+    0 30px 80px rgba(0,0,0,0.5),
+    0 0 40px rgba(212,175,55,0.08);
 }
 
+.card h2 {
+  margin-bottom: 22px;
+  font-weight: 600;
+  color: #F5E6A8;
+}
+
+/* ================= INPUTS ================= */
+select,
+input[type="file"] {
+  width: 100%;
+  padding: 15px 18px;
+  margin: 14px 0;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.6);
+  color: #F5F5F5;
+  transition: 0.3s ease;
+}
+
+select:hover,
+input[type="file"]:hover {
+  border-color: #D4AF37;
+}
+
+select:focus,
+input[type="file"]:focus {
+  outline: none;
+  border-color: #D4AF37;
+  box-shadow: 0 0 0 3px rgba(212,175,55,0.2);
+}
+
+/* ================= PREMIUM GOLD BUTTON ================= */
+.primary-btn,
 .upload-btn {
-    margin-top: 15px;
-    padding: 10px 20px;
-    border: none;
-    background: #4f46e5;
-    color: white;
-    border-radius: 8px;
-    cursor: pointer;
-    position: relative;
+  position: relative;
+  width: 100%;
+  padding: 16px;
+  border-radius: 16px;
+  border: none;
+  background: linear-gradient(135deg, #D4AF37, #B9962E);
+  color: #0F0F0F;
+  font-weight: 600;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  margin-top: 20px;
 }
 
-.spinner {
-    display: none;
-    width: 16px;
-    height: 16px;
-    border: 3px solid #fff;
-    border-top: 3px solid transparent;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-    margin-left: 10px;
+/* shimmer */
+.primary-btn::before,
+.upload-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.5), transparent);
+  transform: skewX(-25deg);
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
+.primary-btn:hover::before,
+.upload-btn:hover::before {
+  animation: shimmer 1s forwards;
 }
 
-.loading .spinner {
-    display: inline-block;
+@keyframes shimmer {
+  100% { left: 130%; }
 }
 
+.primary-btn:hover,
+.upload-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px rgba(212,175,55,0.3);
+}
+
+/* ================= SCORE CIRCLE ================= */
 .score-circle {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    background: conic-gradient(#4f46e5 0%, #e5e7eb 0%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 20px auto;
-    font-size: 28px;
-    font-weight: bold;
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.7);
+  border: 2px solid rgba(212,175,55,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 30px auto;
+  font-size: 36px;
+  font-weight: 600;
+  color: #D4AF37;
+  box-shadow: inset 0 0 30px rgba(212,175,55,0.15);
 }
 
-.toast {
-    margin-top: 15px;
-    padding: 10px;
-    border-radius: 5px;
-    display: none;
+/* ================= HISTORY ================= */
+.history-card ul {
+  list-style: none;
+  margin-top: 15px;
 }
 
-.toast.show {
-    display: block;
+.history-card li {
+  padding: 14px;
+  background: rgba(0,0,0,0.6);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255,255,255,0.05);
+  transition: 0.3s ease;
 }
 
-.toast.success {
-    background: #d1fae5;
-    color: #065f46;
+.history-card li:hover {
+  border-color: rgba(212,175,55,0.4);
+  background: rgba(0,0,0,0.8);
 }
 
-.toast.error {
-    background: #fee2e2;
-    color: #7f1d1d;
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 20px;
+  }
+
+  .navbar {
+    padding: 20px;
+  }
 }
