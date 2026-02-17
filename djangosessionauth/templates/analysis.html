@@ -1,24 +1,167 @@
-<h2>Final ATS Score</h2>
-<p>{{ result.final_score}}</p>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATS Analysis</title>
+<link rel="stylesheet" href="{% static 'analysis.css' %}">
+</head>
 
-<ul>
-    <li>Technical Skills: {{ result.breakdown.technical_skills }}/20</li>
-    <li>Projects: {{ result.breakdown.projects }}/20</li>
-    <li>Experience Depth: {{ result.breakdown.experience_depth }}/20</li>
-    <li>Keywords: {{ result.breakdown.keywords }}/20</li>
-    <li>Presentation: {{ result.breakdown.presentation }}/20</li>
-</ul>
-{% comment %} <form method="POST" action="{% url 'generate_resume' %}">
-    {% csrf_token %}
-    <input type="hidden" name="resume_id" value="{{ resume.id }}">
-    <button type="submit" class="generate-btn">
-        ✨ Generate Optimized Resume
-    </button>
-</form> {% endcomment %}
+<body>
 
-<form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
+<section class="ats-page">
 
-<h3>Full AI Analysis</h3>
-<pre>{{ result.raw_analysis }}</pre>
+  <div class="ats-card">
 
+    <h2 class="ats-title">Final ATS Score</h2>
+
+    <div class="ats-top">
+
+      <!-- LEFT : SCORE -->
+      <div class="score-section reveal">
+        <div class="score-ring" data-score="{{ result.weighted_score }}">
+          <svg class="progress-ring" width="220" height="220">
+            <circle class="ring-bg" cx="110" cy="110" r="90"/>
+            <circle class="ring-progress" cx="110" cy="110" r="90"/>
+          </svg>
+          <div class="score-text">0</div>
+        </div>
+      </div>
+
+      <!-- RIGHT : BREAKDOWN -->
+      <ul class="score-breakdown reveal">
+
+        <li>
+          <span>Technical Skills</span>
+          <div class="bar" data-value="{{ result.breakdown.technical_skills }}"></div>
+          <span>{{ result.breakdown.technical_skills }}/20</span>
+        </li>
+
+        <li>
+          <span>Projects</span>
+          <div class="bar" data-value="{{ result.breakdown.projects }}"></div>
+          <span>{{ result.breakdown.projects }}/20</span>
+        </li>
+
+        <li>
+          <span>Experience Depth</span>
+          <div class="bar" data-value="{{ result.breakdown.experience_depth }}"></div>
+          <span>{{ result.breakdown.experience_depth }}/20</span>
+        </li>
+
+        <li>
+          <span>Keywords</span>
+          <div class="bar" data-value="{{ result.breakdown.keywords }}"></div>
+          <span>{{ result.breakdown.keywords }}/20</span>
+        </li>
+
+        <li>
+          <span>Presentation</span>
+          <div class="bar" data-value="{{ result.breakdown.presentation }}"></div>
+          <span>{{ result.breakdown.presentation }}/20</span>
+        </li>
+
+      </ul>
+
+    </div>
+
+    <h3 class="analysis-title reveal">Full AI Analysis</h3>
+
+    <div class="analysis-box reveal">
+      <pre id="typing-output">{{ result.raw_analysis }}</pre>
+    </div>
+
+  </div>
+
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+  /* =========================
+     SCORE CIRCLE + COUNTER
+  ========================== */
+
+  const ring = document.querySelector(".ring-progress");
+  const scoreRing = document.querySelector(".score-ring");
+  const scoreText = document.querySelector(".score-text");
+
+  const finalScore = parseFloat(scoreRing.dataset.score);
+  const radius = 90;
+  const circumference = 2 * Math.PI * radius;
+
+  ring.style.strokeDasharray = circumference;
+  ring.style.strokeDashoffset = circumference;
+
+  const offset = circumference - (finalScore / 100) * circumference;
+
+  setTimeout(() => {
+    ring.style.strokeDashoffset = offset;
+  }, 300);
+
+  let current = 0;
+  const increment = finalScore / 60;
+
+  function animateCounter(){
+    current += increment;
+    if(current < finalScore){
+      scoreText.textContent = current.toFixed(1);
+      requestAnimationFrame(animateCounter);
+    } else {
+      scoreText.textContent = finalScore.toFixed(1);
+    }
+  }
+
+  animateCounter();
+
+  /* =========================
+       PROGRESS BARS
+  ========================== */
+
+  document.querySelectorAll(".bar").forEach(bar => {
+    const value = parseFloat(bar.dataset.value);
+    const percent = (value / 20) * 100;
+
+    const fill = document.createElement("div");
+    fill.style.height = "100%";
+    fill.style.width = "0%";
+    fill.style.background = "linear-gradient(90deg, #D4AF37, #F5E6A8)";
+    fill.style.borderRadius = "10px";
+    fill.style.transition = "width 1.2s ease";
+
+    bar.appendChild(fill);
+
+    setTimeout(() => {
+      fill.style.width = percent + "%";
+    }, 500);
+  });
+
+  /* =========================
+        SCROLL REVEAL
+  ========================== */
+
+  const reveals = document.querySelectorAll(".reveal");
+
+  function revealOnScroll(){
+    const windowHeight = window.innerHeight;
+
+    reveals.forEach((el, index) => {
+      const elementTop = el.getBoundingClientRect().top;
+
+      if(elementTop < windowHeight - 100){
+        setTimeout(() => {
+          el.classList.add("active");
+        }, index * 150);
+      }
+    });
+  }
+
+  window.addEventListener("scroll", revealOnScroll);
+  revealOnScroll();
+
+});
+</script>
+
+</body>
+</html>
