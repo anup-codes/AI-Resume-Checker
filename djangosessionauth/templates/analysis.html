@@ -1,5 +1,5 @@
 <h2>Final ATS Score</h2>
-<p>{{ result.weighted_score }}</p>
+<p>{{ result.final_score}}</p>
 
 <ul>
     <li>Technical Skills: {{ result.breakdown.technical_skills }}/20</li>
@@ -8,11 +8,17 @@
     <li>Keywords: {{ result.breakdown.keywords }}/20</li>
     <li>Presentation: {{ result.breakdown.presentation }}/20</li>
 </ul>
+{% comment %} <form method="POST" action="{% url 'generate_resume' %}">
+    {% csrf_token %}
+    <input type="hidden" name="resume_id" value="{{ resume.id }}">
+    <button type="submit" class="generate-btn">
+        ✨ Generate Optimized Resume
+    </button>
+</form> {% endcomment %}
+
 <form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
 
-    
-   
 <h3>Full AI Analysis</h3>
 <pre>{{ result.raw_analysis }}</pre>
 

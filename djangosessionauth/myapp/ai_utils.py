@@ -13,7 +13,7 @@ def extract_pdf_text(file_path):
     return text
 
 
-def analyze_resume(file_path, target_role, experience_level, company_type):
+def analyze_resume(resume_text, target_role, experience_level, company_type):
 
 
     client = genai.Client(
@@ -21,7 +21,6 @@ def analyze_resume(file_path, target_role, experience_level, company_type):
 )
 
 
-    resume_text = extract_pdf_text(file_path)
 
     prompt = f"""
 You are an Applicant Tracking System (ATS) used by leading technology companies.
@@ -100,7 +99,8 @@ Resume:
     weighted_total = round(sum(breakdown.values()), 2)
 
     return {
-        "raw_analysis": analysis_text,
-        "weighted_score": weighted_total,  # out of 100
-        "breakdown": breakdown
-    }
+    "final_score": weighted_total, 
+    "raw_analysis": analysis_text,
+    "weighted_score": weighted_total,
+    "breakdown": breakdown
+}

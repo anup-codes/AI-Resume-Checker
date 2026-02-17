@@ -3,61 +3,79 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .models import Resume
+from .models import Resume, ResumeSurvey
 from .models import *
 import os
 from .ai_utils import analyze_resume
 from .models import Resume
-
-from django.contrib.auth.decorators import login_required
-from .models import Resume, ResumeSurvey
-from .ai_utils import analyze_resume
-
+from .ocr_util import extract_text_with_ocr
 
 
 @login_required
 def resume_analysis_view(request):
     if request.method == "POST" and request.FILES.get("resume"):
+        uploaded_file = request.FILES['resume']
 
-        resume_file = request.FILES["resume"]
-
-        target_role = request.POST.get("target_role")
-        experience_level = request.POST.get("experience_level")
-        company_type = request.POST.get("company_type")
-        
-        if not target_role or not experience_level or not company_type:
-            return render(request, "dashboard.html", {
-                "error": "Please complete the survey before submitting."
-            })
-
-
+        # --------------------------
         # 1️⃣ Save Resume
+        # --------------------------
         resume_instance = Resume.objects.create(
             user=request.user,
-            resume=resume_file
+            resume=uploaded_file
         )
+        file_path = resume_instance.resume.path
 
-        # 2️⃣ Save Survey Linked to Resume
-        ResumeSurvey.objects.create(
+        # --------------------------
+        # 2️⃣ Save Survey (Linked to Resume)
+        # --------------------------
+        survey = ResumeSurvey.objects.create(
             resume=resume_instance,
-            target_role=target_role,
-            experience_level=experience_level,
-            company_type=company_type,
+            target_role=request.POST.get("target_role"),
+            experience_level=request.POST.get("experience_level"),
+            company_type=request.POST.get("company_type")
         )
 
-        # 3️⃣ Run AI with contextual data
+        # --------------------------
+        # 3️⃣ Extract Text
+        # --------------------------
+        # Works for PDFs (text + scanned) and images
+        extracted_text = extract_text_with_ocr(file_path)
+
+        if not extracted_text.strip():
+            # Fallback if OCR returns nothing
+            extracted_text = "No readable text found in the file."
+
+        # --------------------------
+        # 4️⃣ Run AI Analysis
+        # --------------------------
         result = analyze_resume(
-            resume_instance.resume.path,
-            target_role,
-            experience_level,
-            company_type
+            resume_text=extracted_text,
+            target_role=survey.target_role,
+            experience_level=survey.experience_level,
+            company_type=survey.company_type
         )
 
-        return render(request, "analysis.html", {"result": result})
+        # --------------------------
+        # 5️⃣ Save AI Analysis
+        # --------------------------
+        analysis = ResumeAnalysis.objects.create(
+            resume=resume_instance,
+            final_score=result.get("weighted_score", 0),
+            full_analysis=result
+        )
 
-    return render(request, "dashboard.html")
+        # --------------------------
+        # 6️⃣ Render Result
+        # --------------------------
+        return render(request, "analysis.html", {
+            "result": result,
+            "resume": resume_instance,
+            "survey": survey,
+            "analysis": analysis
+        })
 
-
+    # GET request or no file uploaded
+    return render(request, "analysis.html")
 
 def upload_resume(request):
     if request.method == "POST":

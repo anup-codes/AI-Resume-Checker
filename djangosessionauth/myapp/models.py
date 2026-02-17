@@ -39,3 +39,12 @@ class ResumeSurvey(models.Model):
     company_type = models.CharField(max_length=50, choices=COMPANY_CHOICES)
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+class ResumeAnalysis(models.Model):
+    resume = models.ForeignKey(Resume, on_delete=models.CASCADE)
+    final_score = models.FloatField()
+    full_analysis = models.JSONField()  # store breakdown & suggestions
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.resume.user.username} - Score: {self.final_score}"

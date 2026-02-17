@@ -14,6 +14,7 @@ urlpatterns = [
     path("dashboard/", dashboard_view, name="dashboard"),# dashboard page
     path('resume/', upload_resume, name='upload_resume'),# upload resume
     path('analysis/', resume_analysis_view, name='analysis'),# upload resume
+    
 
 ]
 
