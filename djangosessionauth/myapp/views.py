@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -96,27 +96,45 @@ def upload_resume(request):
 
     return render(request, 'resume.html')
 
+@login_required
+def update_history(request):
+    # fetch all resumes for this user, newest first
+    resumes = Resume.objects.filter(user=request.user).order_by('-uploaded_at').prefetch_related('resumeanalysis_set')
+    
+    context = {
+        'resumes': resumes
+    }
+    return render(request, 'dashboard.html', context)
+
 
 
 @login_required
 def dashboard_view(request):
     if request.method == "POST":
         resume_file = request.FILES.get('resume')
-
         if not resume_file:
             messages.error(request, "No file uploaded.")
-            return redirect('upload_resume')
+            return redirect('dashboard')
 
         ext = resume_file.name.split('.')[-1].lower()
         if ext not in ['pdf', 'jpg', 'jpeg', 'png']:
             messages.error(request, "Only PDF or image files are allowed.")
-            return redirect('upload_resume')
+            return redirect('dashboard')
 
         Resume.objects.create(user=request.user, resume=resume_file)
         messages.success(request, "Resume uploaded successfully!")
-        return redirect('analysis')
+        return redirect('dashboard')
 
-    return render(request, "dashboard.html")
+    # --------------------------
+    # Prepare full history explicitly
+    # --------------------------
+    history = ResumeAnalysis.objects.filter(resume__user=request.user).order_by('-created_at').select_related('resume')
+
+    context = {
+        'history': history
+    }
+
+    return render(request, "dashboard.html", context)
 
 
 def auth_page(request):
@@ -168,3 +186,6 @@ def auth_page(request):
             return redirect("dashboard")
 
     return render(request, "auth.html")
+def logout_view(request):
+    logout(request)
+    return redirect("auth")

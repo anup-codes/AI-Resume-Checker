@@ -17,7 +17,7 @@
     <div class="logo">AI Resume Analyzer</div>
     <div class="nav-right">
         <span class="username">👤 {{ request.user.username }}</span>
-        <a href="/logout/" class="logout-btn">Logout</a>
+        <a href="{% url 'logout' %}"class="logout-btn">Logout</a>
     </div>
 </nav>
 
@@ -67,7 +67,7 @@
 
             <!-- Drag Upload -->
             <div class="upload-area">
-                <input type="file" name="resume" required>
+                <input type="file" name="resume" accept=".pdf, image/*" required>
                 <p>Drag & Drop Resume Here or Click to Upload</p>
             </div>
 
@@ -79,16 +79,35 @@
     </div>
 
     <!-- History Card -->
-    <div class="card history-card">
-        <h2>Upload History</h2>
-        <ul id="resumeHistory">
-            <li>No uploads yet</li>
-        </ul>
-    </div>
-
+<div class="card history-card">
+<h2>Upload & Analysis History</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Resume</th>
+            <th>ATS Score</th>
+            <th>Date / Time</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if history %}
+            {% for analysis in history %}
+            <tr>
+                <td>{{ analysis.resume.resume.name|slice:"8:" }}</td>
+                <td>{{ analysis.final_score }}</td>
+                <td>{{ analysis.created_at|date:"M d, Y H:i" }}</td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="3">No resumes uploaded yet.</td>
+            </tr>
+        {% endif %}
+    </tbody>
+</table>
 </div>
 
-</div>
-<script src="{% static 'dashboard.js' %}"></script>
+
+{% comment %} <script src="{% static 'dashboard.js' %}"></script> {% endcomment %}
 </body>
 </html>
