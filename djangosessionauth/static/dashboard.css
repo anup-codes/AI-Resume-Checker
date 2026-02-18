@@ -137,6 +137,52 @@ body::before {
 }
 
 /* ================= DASHBOARD GRID ================= */
+/* HERO */
+.hero {
+  margin-top: 40px;
+  margin-left: 60px;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+/* Gradient Text */
+.hero h1 {
+  font-size: 40px;
+  font-weight: 700;
+  background: linear-gradient(
+    90deg,
+    #ffffff,
+    #D4AF37,
+    #ffffff
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shineText 4s linear infinite;
+}
+
+@keyframes shineText {
+  to {
+    background-position: 200% center;
+  }
+}
+
+.hero p {
+  margin-top: 12px;
+  font-size: 17px;
+  color: rgba(255,255,255,0.65);
+}
+.hero-accent {
+  width: 1400px;
+  height: 4px;
+  margin-top: 20px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #D4AF37, #B9962E);
+  box-shadow: 0 0 20px rgba(212,175,55,0.6);
+}
+
+
+
 .dashboard {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -146,6 +192,7 @@ body::before {
 
 /* ================= GLASSMORPHISM CARDS ================= */
 .card {
+  position: relative;
   background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
@@ -153,14 +200,35 @@ body::before {
   border: 1px solid rgba(255,255,255,0.08);
   padding: 32px;
   transition: all 0.4s ease;
+  overflow: hidden;
+}
+
+/* Golden glow layer */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 26px;
+  background: radial-gradient(circle at top right,
+      rgba(212,175,55,0.15),
+      transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.card:hover::before {
+  opacity: 1;
 }
 
 .card:hover {
   transform: translateY(-8px);
+  border-color: rgba(212,175,55,0.5);
   box-shadow:
     0 20px 60px rgba(0,0,0,0.6),
-    0 0 40px rgba(212,175,55,0.1);
+    0 0 40px rgba(212,175,55,0.2);
 }
+
 
 
 .card h2 {
