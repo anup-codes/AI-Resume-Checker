@@ -46,6 +46,7 @@ body::before {
     align-items: center;
 
     background: rgba(15, 15, 15, 0.85);
+
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
 
@@ -57,13 +58,73 @@ body::before {
 }
 
 /* ================= LOGO ================= */
+/* ================= A³ LOGO ================= */
 .logo {
-    font-size: 22px;
-    font-weight: 600;
-    color: #D4AF37;
-    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
     cursor: pointer;
 }
+
+/* Main A³ mark */
+.logo-mark {
+    font-size: 24px;
+    font-weight: 700;
+    position: relative;
+    color: #D4AF37;
+    letter-spacing: 1px;
+}
+
+/* Superscript 3 */
+.logo-mark sup {
+    font-size: 11px;
+    top: -0.7em;
+    position: relative;
+}
+
+/* Animated subtle glow */
+.logo-mark::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border-radius: 8px;
+    background: radial-gradient(circle, rgba(212,175,55,0.4), transparent 70%);
+    opacity: 0;
+    transition: 0.4s ease;
+    z-index: -1;
+}
+
+.logo:hover .logo-mark::after {
+    opacity: 1;
+}
+
+/* Divider */
+.logo-divider {
+    width: 1px;
+    height: 28px;
+    background: rgba(255,255,255,0.15);
+}
+
+/* Text */
+.logo-text span {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.logo-text small {
+    display: block;
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 2px;
+}
+
+
+/* .logo-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.7);
+} */
+
 
 /* Animated Underline */
 .logo::after {
@@ -139,15 +200,40 @@ body::before {
 /* ================= DASHBOARD GRID ================= */
 /* HERO */
 .hero {
-  margin-top: 40px;
-  margin-left: 60px;
-  margin-bottom: 40px;
-  position: relative;
+    margin: 50px 60px 40px;
 }
+
+.hero h1 {
+    font-size: 44px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+/* A³ Highlight */
+.hero-brand {
+    background: linear-gradient(135deg, #D4AF37, #B9962E);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-brand sup {
+    font-size: 16px;
+    top: -0.8em;
+    position: relative;
+}
+
+.hero p {
+    margin-top: 14px;
+    font-size: 17px;
+    color: rgba(255,255,255,0.65);
+}
+
+
+
 
 /* Gradient Text */
 .hero h1 {
-  font-size: 40px;
+  font-size: 42px;
   font-weight: 700;
   background: linear-gradient(
     90deg,
@@ -167,6 +253,11 @@ body::before {
   }
 }
 
+.highlight {
+  background: linear-gradient(135deg, #D4AF37, #B9962E);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 .hero p {
   margin-top: 12px;
   font-size: 17px;
@@ -365,4 +456,13 @@ input[type="file"]:focus {
   inset: 0;
   opacity: 0;
   cursor: pointer;
+}
+.background-grid {
+  position: fixed;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  z-index: -2;
 }
