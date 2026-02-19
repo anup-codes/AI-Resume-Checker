@@ -2,25 +2,104 @@ import PyPDF2
 import re
 from google import genai
 import os
+import requests
 
 
+# -----------------------------------
+# 1️⃣ Extract PDF text normally
+# -----------------------------------
 def extract_pdf_text(file_path):
     text = ""
-    with open(file_path, 'rb') as file:
+
+    with open(file_path, "rb") as file:
         reader = PyPDF2.PdfReader(file)
+
         for page in reader.pages:
-            text += page.extract_text()
-    return text
+            extracted = page.extract_text()
+            if extracted:
+                text += extracted
+
+    return text.strip()
 
 
-def analyze_resume(resume_text, target_role, experience_level, company_type):
+# -----------------------------------
+# 2️⃣ OCR.space fallback
+# -----------------------------------
+def extract_text_with_ocr_space(file_path):
+    api_key = os.getenv("OCR_SPACE_API_KEY")
+    url = "https://api.ocr.space/parse/image"
+
+    with open(file_path, "rb") as file:
+        response = requests.post(
+            url,
+            headers={
+                "apikey": api_key
+            },
+            files={
+                "file": file
+            },
+            data={
+                "language": "eng",
+                "isOverlayRequired": False,
+                "detectOrientation": True,
+                "isTable": True,
+                "OCREngine": 2,          # Engine 2 is more accurate
+                "scale": True,           # Improves small text
+                "isCreateSearchablePdf": False
+            }
+
+        )
+
+    if response.status_code != 200:
+        print("OCR API HTTP Error:", response.status_code)
+        return ""
+
+    result = response.json()
+
+    if result.get("IsErroredOnProcessing"):
+        print("OCR Processing Error:", result)
+        return ""
+
+    parsed_results = result.get("ParsedResults")
+
+    if not parsed_results:
+        return ""
+
+    extracted_text = parsed_results[0].get("ParsedText")
+
+    if not extracted_text:
+        return ""
+
+    return extracted_text.strip()
 
 
+# -----------------------------------
+# 3️⃣ Main Resume Analysis Function
+# -----------------------------------
+def analyze_resume(file_path, target_role, experience_level, company_type):
+
+    # Step 1: Try normal PDF extraction
+    resume_text = extract_pdf_text(file_path)
+
+    # Step 2: If empty → use OCR.space
+    if not resume_text:
+        resume_text = extract_text_with_ocr_space(file_path)
+
+    # Step 3: If still empty → stop
+    if not resume_text:
+        return {
+            "final_score": 0,
+            "raw_analysis": "No readable text found in resume.",
+            "weighted_score": 0,
+            "breakdown": {}
+        }
+
+    # -----------------------------------
+    # Gemini Client (Correct Key)
+    # -----------------------------------
     client = genai.Client(
-    api_key=os.getenv("GEMINI_API_KEY")
-)
-
-
+        api_key=os.getenv("GEMINI_API_KEY")
+    )
 
     prompt = f"""
 You are an Applicant Tracking System (ATS) used by leading technology companies.
@@ -69,15 +148,13 @@ Resume:
 
     analysis_text = response.candidates[0].content.parts[0].text
 
-    # -------------------------------
-    # NEW LOGIC: Extract and Reweight
-    # -------------------------------
-
+    # -----------------------------------
+    # Extract & Reweight Scores
+    # -----------------------------------
     def extract_score(category):
         match = re.search(rf"{category}:\s*(\d+)", analysis_text)
         if match:
             score = int(match.group(1))
-            # Convert 0–100 to 0–5 scale
             return min(round((score / 100) * 5, 2), 5)
         return 0
 
@@ -87,7 +164,6 @@ Resume:
     keywords = extract_score("Keywords")
     presentation = extract_score("Presentation")
 
-    # Each category = 20% weight
     breakdown = {
         "technical_skills": round((technical / 5) * 20, 2),
         "projects": round((projects / 5) * 20, 2),
@@ -99,8 +175,8 @@ Resume:
     weighted_total = round(sum(breakdown.values()), 2)
 
     return {
-    "final_score": weighted_total, 
-    "raw_analysis": analysis_text,
-    "weighted_score": weighted_total,
-    "breakdown": breakdown
-}
+        "final_score": weighted_total,
+        "raw_analysis": analysis_text,
+        "weighted_score": weighted_total,
+        "breakdown": breakdown
+    }

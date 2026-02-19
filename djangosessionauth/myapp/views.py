@@ -8,7 +8,6 @@ from .models import *
 import os
 from .ai_utils import analyze_resume
 from .models import Resume
-from .ocr_util import extract_text_with_ocr
 
 
 @login_required
@@ -35,25 +34,18 @@ def resume_analysis_view(request):
             company_type=request.POST.get("company_type")
         )
 
-        # --------------------------
-        # 3️⃣ Extract Text
-        # --------------------------
-        # Works for PDFs (text + scanned) and images
-        extracted_text = extract_text_with_ocr(file_path)
 
-        if not extracted_text.strip():
-            # Fallback if OCR returns nothing
-            extracted_text = "No readable text found in the file."
 
         # --------------------------
         # 4️⃣ Run AI Analysis
         # --------------------------
         result = analyze_resume(
-            resume_text=extracted_text,
-            target_role=survey.target_role,
-            experience_level=survey.experience_level,
-            company_type=survey.company_type
-        )
+        file_path=file_path,
+        target_role=survey.target_role,
+        experience_level=survey.experience_level,
+        company_type=survey.company_type
+    )
+
 
         # --------------------------
         # 5️⃣ Save AI Analysis
