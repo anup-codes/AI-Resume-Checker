@@ -78,10 +78,13 @@ def extract_text_with_ocr_space(file_path):
 # -----------------------------------
 def analyze_resume(file_path, target_role, experience_level, company_type):
 
-    # Step 1: Try normal PDF extraction
-    resume_text = extract_pdf_text(file_path)
+    resume_text = ""
 
-    # Step 2: If empty → use OCR.space
+    # If file looks like PDF → try PDF extraction first
+    if file_path.lower().endswith(".pdf"):
+        resume_text = extract_pdf_text(file_path)
+
+    # If empty OR not PDF → use OCR
     if not resume_text:
         resume_text = extract_text_with_ocr_space(file_path)
 
