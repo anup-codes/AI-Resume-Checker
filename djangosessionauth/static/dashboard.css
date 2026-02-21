@@ -399,25 +399,80 @@ input[type="file"]:focus {
 }
 
 /* ================= HISTORY ================= */
-.history-card ul {
-  list-style: none;
-  margin-top: 15px;
+/* ================= HISTORY LIST ================= */
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 15px;
 }
 
-.history-card li {
-  padding: 14px;
-  background: rgba(0,0,0,0.6);
-  border-radius: 12px;
-  margin-bottom: 12px;
-  border: 1px solid rgba(255,255,255,0.05);
-  transition: 0.3s ease;
+/* Each Row */
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 20px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: all 0.3s ease;
 }
 
-.history-card li:hover {
-  border-color: rgba(212,175,55,0.4);
-  background: rgba(0,0,0,0.8);
+/* Hover Effect */
+.history-item:hover {
+    background: rgba(212,175,55,0.06);
+    border-color: rgba(212,175,55,0.4);
+    transform: translateY(-3px);
 }
 
+/* Left Side */
+.history-left {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Resume Name */
+.resume-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #F5F5F5;
+}
+
+/* Date */
+.resume-date {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+}
+
+/* Right Side */
+.history-right {
+    display: flex;
+    align-items: center;
+}
+
+/* Score Badge */
+.score-badge {
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #D4AF37, #B9962E);
+    color: #0F0F0F;
+    min-width: 60px;
+    text-align: center;
+    box-shadow: 0 6px 20px rgba(212,175,55,0.25);
+}
+
+/* Empty State */
+.no-history {
+    padding: 20px;
+    text-align: center;
+    color: rgba(255,255,255,0.5);
+    font-size: 14px;
+}
 /* ================= RESPONSIVE ================= */
 @media (max-width: 768px) {
 
@@ -465,4 +520,59 @@ input[type="file"]:focus {
     linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
   background-size: 40px 40px;
   z-index: -2;
+}
+.history-card {
+    max-height: 420px;   /* adjust height */
+    overflow-y: auto;
+    padding-right: 10px;
+}
+/* ================= CUSTOM SCROLLBAR ================= */
+
+/* Chrome, Edge, Safari */
+.history-card::-webkit-scrollbar {
+    width: 8px;
+}
+
+.history-card::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+}
+
+.history-card::-webkit-scrollbar-thumb {
+    background: rgba(212,175,55,0.6);
+    backdrop-filter: blur(5px);
+}
+
+.history-card::-webkit-scrollbar-thumb:hover {
+    background: #D4AF37;
+}
+
+/* Firefox */
+.history-card {
+    scrollbar-width: thin;
+    scrollbar-color: #D4AF37 rgba(255,255,255,0.05);
+}
+body::-webkit-scrollbar { width: 8px; }
+/* Hide scrollbar but allow scroll */
+.history-card {
+    max-height: 420px;
+    overflow-y: auto;
+
+    scrollbar-width: none;       /* Firefox */
+    -ms-overflow-style: none;    /* IE/Edge */
+}
+
+.history-card::-webkit-scrollbar {
+    display: none;               /* Chrome, Safari */
+}
+/* Hide main page scrollbar but keep scroll functionality */
+
+html, body {
+    scrollbar-width: none;        /* Firefox */
+    -ms-overflow-style: none;     /* IE & Edge */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    display: none;                /* Chrome, Safari */
 }

@@ -203,8 +203,9 @@ def dashboard_view(request):
         messages.success(request, "Resume uploaded successfully!")
         return redirect('dashboard')
 
-    history = ResumeAnalysis.objects.filter(resume__user=request.user).order_by('-created_at').select_related('resume')
-
+    history = ResumeAnalysis.objects.filter(
+    resume__user=request.user
+).select_related('resume').order_by('-created_at')[:5]
     context = {'history': history}
     return render(request, "dashboard.html", context)
 

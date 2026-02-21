@@ -115,31 +115,35 @@
 
     <!-- UPLOAD HISTORY -->
     <div class="card history-card">
-       <h2>Upload & Analysis History</h2>
-<table>
-    <thead>
-        <tr>
-            <th>Resume</th>
-            <th>ATS Score</th>
-            <th>Date / Time</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% if history %}
-            {% for analysis in history %}
-            <tr>
-                <td>{{ analysis.resume.resume.name|slice:"8:" }}</td>
-                <td>{{ analysis.final_score }}</td>
-                <td>{{ analysis.created_at|date:"M d, H:i" }}</td>
-            </tr>
-            {% endfor %}
-        {% else %}
-            <tr>
-                <td colspan="3">No resumes uploaded yet.</td>
-            </tr>
-        {% endif %}
-    </tbody>
-</table>
+       <h2>Uploaded & Analysis History</h2>
+<div class="history-list">
+{% if history %}
+    {% for analysis in history %}
+    <div class="history-item">
+
+        <div class="history-left">
+            <div class="resume-name">
+                {{ analysis.resume.resume.name|slice:"8:" }}
+            </div>
+            <div class="resume-date">
+                {{ analysis.created_at|date:"M d, Y • H:i" }}
+            </div>
+        </div>
+
+        <div class="history-right">
+            <div class="score-badge">
+                {{ analysis.final_score }}%
+            </div>
+        </div>
+
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="no-history">
+        No resumes uploaded yet.
+    </div>
+{% endif %}
+</div>
     </div>
 
 </div>
