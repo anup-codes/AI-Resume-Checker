@@ -6,143 +6,95 @@ import requests
 
 
 # -----------------------------------
-# 1️⃣ Extract PDF text normally
+# 1️⃣ Extract PDF text
 # -----------------------------------
 def extract_pdf_text(file_path):
     text = ""
-
-    with open(file_path, "rb") as file:
-        reader = PyPDF2.PdfReader(file)
-
-        for page in reader.pages:
-            extracted = page.extract_text()
-            if extracted:
-                text += extracted
-
+    try:
+        with open(file_path, "rb") as file:
+            reader = PyPDF2.PdfReader(file)
+            for page in reader.pages:
+                extracted = page.extract_text()
+                if extracted:
+                    text += extracted
+    except Exception:
+        return ""
     return text.strip()
 
 
 # -----------------------------------
-# 2️⃣ OCR.space fallback
+# 2️⃣ OCR Fallback (for images)
 # -----------------------------------
 def extract_text_with_ocr_space(file_path):
     api_key = os.getenv("OCR_SPACE_API_KEY")
-    url = "https://api.ocr.space/parse/image"
-
-    with open(file_path, "rb") as file:
-        response = requests.post(
-            url,
-            headers={
-                "apikey": api_key
-            },
-            files={
-                "file": file
-            },
-            data={
-                "language": "eng",
-                "isOverlayRequired": False,
-                "detectOrientation": True,
-                "isTable": True,
-                "OCREngine": 2,          # Engine 2 is more accurate
-                "scale": True,           # Improves small text
-                "isCreateSearchablePdf": False
-            }
-
-        )
-
-    if response.status_code != 200:
-        print("OCR API HTTP Error:", response.status_code)
+    if not api_key:
         return ""
 
-    result = response.json()
+    try:
+        with open(file_path, "rb") as f:
+            response = requests.post(
+                "https://api.ocr.space/parse/image",
+                files={"file": f},
+                data={
+                    "apikey": api_key,
+                    "language": "eng",
+                },
+            )
 
-    if result.get("IsErroredOnProcessing"):
-        print("OCR Processing Error:", result)
+        result = response.json()
+        parsed = result.get("ParsedResults")
+        if parsed and len(parsed) > 0:
+            return parsed[0].get("ParsedText", "").strip()
+    except Exception:
         return ""
 
-    parsed_results = result.get("ParsedResults")
-
-    if not parsed_results:
-        return ""
-
-    extracted_text = parsed_results[0].get("ParsedText")
-
-    if not extracted_text:
-        return ""
-
-    return extracted_text.strip()
+    return ""
 
 
 # -----------------------------------
-# 3️⃣ Main Resume Analysis Function
+# 3️⃣ Analyze Resume
 # -----------------------------------
 def analyze_resume(file_path, target_role, experience_level, company_type):
 
+    # Extract text
     resume_text = ""
-
-    # If file looks like PDF → try PDF extraction first
     if file_path.lower().endswith(".pdf"):
         resume_text = extract_pdf_text(file_path)
 
-    # If empty OR not PDF → use OCR
     if not resume_text:
         resume_text = extract_text_with_ocr_space(file_path)
 
-    # Step 3: If still empty → stop
     if not resume_text:
         return {
             "final_score": 0,
-            "raw_analysis": "No readable text found in resume.",
             "weighted_score": 0,
-            "breakdown": {}
+            "breakdown": {},
+            "raw_analysis": "No readable text found in resume."
         }
 
-    # -----------------------------------
-    # Gemini Client (Correct Key)
-    # -----------------------------------
-    client = genai.Client(
-        api_key=os.getenv("GEMINI_API_KEY")
-    )
+    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
     prompt = f"""
-You are an Applicant Tracking System (ATS) used by leading technology companies.
+    You are an ATS evaluating a resume for {target_role}, {experience_level} level, at {company_type}.
 
-Candidate Target Role: {target_role}
-Experience Level: {experience_level}
-Target Company Type: {company_type}
+    STRICT FORMAT:
 
-Use widely accepted industry expectations for professional in this role within the {target_role} and {experience_level} in {company_type}.
+    Match Score: <number>
 
-Evaluate the resume based on:
+    Technical Skills: <number>
+    Projects: <number>
+    Experience Depth: <number>
+    Keywords: <number>
+    Presentation: <number>
 
-1. Technical skill alignment
-2. Project relevance and impact
-3. Depth of subject knowledge
-4. Practical hands-on experience
-5. Keyword alignment with industry standards
-6. Overall clarity and structure
+    Matched Skills:
+    Missing Skills:
+    Weak Alignment Areas:
+    Improvement Recommendations:
 
-Return your evaluation in the following structured format:
-
-Match Score (0–100):
-Breakdown of score by category:
-- Technical Skills:
-- Projects:
-- Experience Depth:
-- Keywords:
-- Presentation:
-
-Be objective and critical. Avoid generic praise.
-Provide measurable feedback 
-
- Matched skills:
- Missing skills:
- Weak alignment areas:
- Improvement recommendations:
-
-Resume:
-{resume_text}
-"""
+    Resume:
+    {resume_text}
+    """
 
     response = client.models.generate_content(
         model="gemini-2.5-flash-lite",
@@ -151,15 +103,18 @@ Resume:
 
     analysis_text = response.candidates[0].content.parts[0].text
 
-    # -----------------------------------
-    # Extract & Reweight Scores
-    # -----------------------------------
-    def extract_score(category):
-        match = re.search(rf"{category}:\s*(\d+)", analysis_text)
+
+    # ----------------------------
+    # Extract Scores Safely
+    # ----------------------------
+    def extract_score(label):
+        match = re.search(rf"{label}:\s*(\d+)", analysis_text, re.IGNORECASE)
         if match:
-            score = int(match.group(1))
-            return min(round((score / 100) * 5, 2), 5)
+            return int(match.group(1))
         return 0
+
+
+    match_score = extract_score("Match Score")
 
     technical = extract_score("Technical Skills")
     projects = extract_score("Projects")
@@ -168,18 +123,139 @@ Resume:
     presentation = extract_score("Presentation")
 
     breakdown = {
-        "technical_skills": round((technical / 5) * 20, 2),
-        "projects": round((projects / 5) * 20, 2),
-        "experience_depth": round((experience / 5) * 20, 2),
-        "keywords": round((keywords / 5) * 20, 2),
-        "presentation": round((presentation / 5) * 20, 2),
+        "technical_skills": technical,
+        "projects": projects,
+        "experience_depth": experience,
+        "keywords": keywords,
+        "presentation": presentation,
     }
 
-    weighted_total = round(sum(breakdown.values()), 2)
+    # If Match Score missing, compute average
+    if match_score == 0 and breakdown:
+        values = [v for v in breakdown.values() if v > 0]
+        if values:
+            match_score = int(sum(values) / len(values))
 
     return {
-        "final_score": weighted_total,
-        "raw_analysis": analysis_text,
-        "weighted_score": weighted_total,
-        "breakdown": breakdown
+        "final_score": match_score,
+        "weighted_score": match_score,
+        "breakdown": breakdown,
+        "raw_analysis": analysis_text.strip()
     }
+
+
+# -----------------------------------
+# 4️⃣ Generate Optimized Resume HTML
+# -----------------------------------
+def generate_resume_content(resume_text, survey_data, analysis_text):
+
+    # Convert bytes to string safely
+    if isinstance(resume_text, bytes):
+        try:
+            resume_text = resume_text.decode("utf-8", errors="ignore")
+        except Exception:
+            resume_text = str(resume_text)
+
+    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+    prompt = f"""
+    You are a professional resume writer.
+
+    Rewrite and optimize this resume using:
+    - Survey Data
+    - ATS Feedback
+
+    Return ONLY clean HTML body content.
+    No explanations. No markdown.
+
+    Resume:
+    {resume_text}
+
+    Survey Data:
+    {survey_data}
+
+    ATS Feedback:
+    {analysis_text}
+    """
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash-lite",
+        contents=prompt
+    )
+
+    return response.candidates[0].content.parts[0].text
+
+
+# -----------------------------------
+# 5️⃣ Format Analysis Text
+# -----------------------------------
+def format_analysis_text(raw_text, breakdown=None):
+    if not raw_text:
+        return ""
+
+    # 🔥 Remove markdown stars
+    raw_text = raw_text.replace("**", "").replace("*", "")
+    # Convert single digit scores (like 9) to /100 scale (90)
+    # Convert scores out of 10 to out of 100 (only if 1–10)
+    # Keep scores strictly between 0–20 (no scaling)
+    def convert_score(match):
+        score = int(match.group(1))
+        score = max(0, min(score, 20))  # safety clamp
+        return f": {score}"
+
+    raw_text = re.sub(
+        r':\s*(\d{1,2})(?=\s|\n|\))',
+        convert_score,
+        raw_text
+    )
+
+
+
+    # Remove existing HTML tags if any
+    raw_text = raw_text.replace("<br>", "\n")
+
+    lines = raw_text.split("\n")
+    html_output = ""
+    in_list = False
+
+    for line in lines:
+        line = line.strip()
+
+        if not line:
+            continue
+
+        # Section headers
+        if line.endswith(":") or re.match(r"^[A-Za-z\s]+:$", line):
+            if in_list:
+                html_output += "</ul>"
+                in_list = False
+
+            title = line.replace(":", "")
+            html_output += f"<h3 style='margin-top:20px;'>{title}</h3>"
+
+        # Bullet-style content
+        elif (
+            (line.startswith("-")) or
+            (line and line[0].isdigit()) or
+            ("•" in line)
+        ):
+            if not in_list:
+                html_output += "<ul>"
+                in_list = True
+
+            cleaned = re.sub(r"^\d+\.\s*", "", line)
+            cleaned = cleaned.lstrip("-• ").strip()
+
+            html_output += f"<li>{cleaned}</li>"
+
+        else:
+            if in_list:
+                html_output += "</ul>"
+                in_list = False
+
+            html_output += f"<p>{line}</p>"
+
+    if in_list:
+        html_output += "</ul>"
+
+    return html_output

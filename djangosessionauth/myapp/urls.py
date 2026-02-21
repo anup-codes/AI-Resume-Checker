@@ -15,8 +15,7 @@ urlpatterns = [
     path('resume/', upload_resume, name='upload_resume'),# upload resume
     path('analysis/', resume_analysis_view, name='analysis'),# upload resume
     path('logout/', logout_view, name='logout'),
-
-]
+    path("generate/<int:resume_id>/", generate_pdf, name="generate_pdf"),]
 
 # Serve media files in development mode
 if settings.DEBUG:

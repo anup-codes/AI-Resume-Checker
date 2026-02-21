@@ -1,32 +1,109 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .models import Resume, ResumeSurvey
-from .models import *
+from .models import Resume, ResumeSurvey, ResumeAnalysis
 import os
-from .ai_utils import analyze_resume
-from .models import Resume
+from .ai_utils import analyze_resume, generate_resume_content, format_analysis_text
+from django.template.loader import render_to_string
+from django.http import HttpResponse, HttpResponseBadRequest
+from weasyprint import HTML
+import logging
+from django.conf import settings
+import re
+
+logger = logging.getLogger(__name__)
+
+# --------------------------
+# Helper: Parse AI analysis into structured sections
+# --------------------------
+def parse_analysis(text):
+    """
+    Convert formatted AI output into structured sections for template rendering.
+    """
+    sections = {}
+    pattern = r"([A-Za-z\s]+:)\s*\n(.*?)(?=\n[A-Za-z\s]+:|\Z)"
+    matches = re.findall(pattern, text, re.DOTALL)
+
+    for title, content in matches:
+        clean_title = title.strip().replace(":", "")
+        sections[clean_title] = content.strip()
+
+    return sections
 
 
+# -----------------------------------
+# Generate PDF from resume + AI optimized content
+# -----------------------------------
+@login_required
+def generate_pdf(request, resume_id):
+    # 1️⃣ Fetch resume
+    resume = get_object_or_404(Resume, id=resume_id, user=request.user)
+
+    # 2️⃣ Fetch survey data
+    survey = ResumeSurvey.objects.filter(resume=resume).first()
+    if not survey:
+        return HttpResponseBadRequest("Survey data not found for this resume.")
+
+    # 3️⃣ Extract raw resume text
+    resume_text = resume.resume.path and open(resume.resume.path, "rb").read()
+    if not resume_text:
+        return HttpResponseBadRequest("Unable to extract resume text from file.")
+
+    # 4️⃣ Fetch previous AI analysis or create new
+    analysis_obj, _ = ResumeAnalysis.objects.get_or_create(resume=resume)
+
+    # 5️⃣ Generate optimized resume content (HTML)
+    new_html_content = generate_resume_content(
+        resume_text=resume_text,
+        survey_data={
+            "target_role": survey.target_role,
+            "experience_level": survey.experience_level,
+            "company_type": survey.company_type
+        },
+        analysis_text=analysis_obj.full_analysis or ""
+    )
+
+    # 6️⃣ Save / update analysis
+    if isinstance(new_html_content, dict):
+        html_content_for_render = new_html_content.get("html_content", "")
+    else:
+        html_content_for_render = new_html_content
+
+    analysis_obj.full_analysis = new_html_content
+    analysis_obj.save()
+
+    # 7️⃣ Render HTML template
+    html_string = render_to_string(
+        "resume_temp.html",
+        {"resume_html": html_content_for_render}
+    )
+
+    if not html_string.strip():
+        return HttpResponseBadRequest("Rendered HTML is empty.")
+
+    # 8️⃣ Convert to PDF
+    pdf_file = HTML(string=html_string).write_pdf()
+
+    response = HttpResponse(pdf_file, content_type="application/pdf")
+    response["Content-Disposition"] = "attachment; filename=optimized_resume.pdf"
+    return response
+
+
+# -----------------------------------
+# Upload & analyze resume
+# -----------------------------------
 @login_required
 def resume_analysis_view(request):
     if request.method == "POST" and request.FILES.get("resume"):
         uploaded_file = request.FILES['resume']
 
-        # --------------------------
-        # 1️⃣ Save Resume
-        # --------------------------
-        resume_instance = Resume.objects.create(
-            user=request.user,
-            resume=uploaded_file
-        )
+        # 1️⃣ Save resume
+        resume_instance = Resume.objects.create(user=request.user, resume=uploaded_file)
         file_path = resume_instance.resume.path
 
-        # --------------------------
-        # 2️⃣ Save Survey (Linked to Resume)
-        # --------------------------
+        # 2️⃣ Save survey
         survey = ResumeSurvey.objects.create(
             resume=resume_instance,
             target_role=request.POST.get("target_role"),
@@ -34,41 +111,53 @@ def resume_analysis_view(request):
             company_type=request.POST.get("company_type")
         )
 
-
-
-        # --------------------------
-        # 4️⃣ Run AI Analysis
-        # --------------------------
-        result = analyze_resume(
-        file_path=file_path,
-        target_role=survey.target_role,
-        experience_level=survey.experience_level,
-        company_type=survey.company_type
-    )
-
-
-        # --------------------------
-        # 5️⃣ Save AI Analysis
-        # --------------------------
-        analysis = ResumeAnalysis.objects.create(
-            resume=resume_instance,
-            final_score=result.get("weighted_score", 0),
-            full_analysis=result
+        # 3️⃣ Run AI analysis
+        raw_result = analyze_resume(
+            file_path=file_path,
+            target_role=survey.target_role,
+            experience_level=survey.experience_level,
+            company_type=survey.company_type
         )
 
-        # --------------------------
-        # 6️⃣ Render Result
-        # --------------------------
+        # 4️⃣ Format AI analysis text & fix Match Score
+        formatted_ai_text = format_analysis_text(
+            raw_text=raw_result.get("raw_analysis", ""),
+            breakdown=raw_result.get("breakdown", {})
+        )
+
+        # 5️⃣ Update numeric breakdown from formatted text
+        breakdown = raw_result.get("breakdown", {})
+        weighted_score = raw_result.get("weighted_score", 0)
+
+        # 6️⃣ Save formatted analysis in DB
+        analysis = ResumeAnalysis.objects.create(
+            resume=resume_instance,
+            final_score=weighted_score,
+            full_analysis=formatted_ai_text
+        )
+
+        # 7️⃣ Prepare 'result' dict for template (matches your template keys)
+        result = {
+            "weighted_score": weighted_score,
+            "breakdown": breakdown,
+            "raw_analysis": formatted_ai_text
+        }
+
+        # 8️⃣ Parse formatted AI text for structured sections (optional, if needed)
+        analysis_sections = parse_analysis(formatted_ai_text)
+
+        # 9️⃣ Render template
         return render(request, "analysis.html", {
-            "result": result,
             "resume": resume_instance,
             "survey": survey,
-            "analysis": analysis
+            "analysis": analysis,
+            "result": result,
+            "analysis_sections": analysis_sections,
         })
 
     # GET request or no file uploaded
     return render(request, "analysis.html")
-
+@login_required
 def upload_resume(request):
     if request.method == "POST":
         resume_file = request.FILES.get('resume')
@@ -88,16 +177,13 @@ def upload_resume(request):
 
     return render(request, 'resume.html')
 
+
 @login_required
 def update_history(request):
-    # fetch all resumes for this user, newest first
     resumes = Resume.objects.filter(user=request.user).order_by('-uploaded_at').prefetch_related('resumeanalysis_set')
     
-    context = {
-        'resumes': resumes
-    }
+    context = {'resumes': resumes}
     return render(request, 'dashboard.html', context)
-
 
 
 @login_required
@@ -117,28 +203,19 @@ def dashboard_view(request):
         messages.success(request, "Resume uploaded successfully!")
         return redirect('dashboard')
 
-    # --------------------------
-    # Prepare full history explicitly
-    # --------------------------
     history = ResumeAnalysis.objects.filter(resume__user=request.user).order_by('-created_at').select_related('resume')
 
-    context = {
-        'history': history
-    }
-
+    context = {'history': history}
     return render(request, "dashboard.html", context)
 
 
 def auth_page(request):
-
-    # If already logged in → go to dashboard
     if request.user.is_authenticated:
-        return redirect("dashboard")   # using URL name (recommended)
+        return redirect("dashboard")
 
     if request.method == "POST":
         form_type = request.POST.get("form_type")
 
-        # ---------------- REGISTER ----------------
         if form_type == "register":
             name = request.POST.get("name")
             username = request.POST.get("username")
@@ -159,15 +236,12 @@ def auth_page(request):
                 first_name=name,
                 password=password
             )
-
             messages.success(request, "Account created successfully")
             return redirect("auth")
 
-        # ---------------- LOGIN ----------------
         elif form_type == "login":
             username = request.POST.get("username")
             password = request.POST.get("password")
-
             user = authenticate(request, username=username, password=password)
 
             if user is None:
@@ -178,6 +252,8 @@ def auth_page(request):
             return redirect("dashboard")
 
     return render(request, "auth.html")
+
+
 def logout_view(request):
     logout(request)
     return redirect("auth")

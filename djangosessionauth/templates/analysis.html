@@ -69,11 +69,20 @@
     <h3 class="analysis-title reveal">Full AI Analysis</h3>
 
     <div class="analysis-box reveal">
-      <pre id="typing-output">{{ result.raw_analysis }}</pre>
+<div id="typing-output">
+  {{ result.raw_analysis|safe }}
+</div>
+    </div>
+    <div class="generate-section reveal">
+        <a href="{% url 'generate_pdf' resume.id %}">
+          <button type="button" class="generate-btn">
+            Generate Resume
+          </button>
+        </a>
+
     </div>
 
   </div>
-
 </section>
 
 <script>
