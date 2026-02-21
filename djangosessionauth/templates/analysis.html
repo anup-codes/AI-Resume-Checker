@@ -4,11 +4,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ATS Analysis</title>
+<title>A³ AI Resume Intelligence</title>
+ <link rel="icon" type="image/svg+xml" href="{% static 'a3-favicon.svg' %}">
 <link rel="stylesheet" href="{% static 'analysis.css' %}">
 </head>
 
 <body>
+  <!-- ================= NAVBAR ================= -->
+<nav class="navbar">
+    <div class="nav-left">
+        <div class="logo">
+            <div class="logo-mark">A<sup>3</sup></div>
+            <div class="logo-divider"></div>
+            <div class="logo-text">
+                <span>AI Resume</span>
+                <small>Intelligence</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-right">
+        <div class="user-info">
+            <span class="user-icon">👤</span>
+            <span class="username">{{ request.user.username }}</span>
+        </div>
+        <a href="{% url 'dashboard' %}" class="logout-btn">Dashboard</a>
+    </div>
+</nav>
 
 <section class="ats-page">
 
@@ -69,7 +91,7 @@
     <h3 class="analysis-title reveal">Full AI Analysis</h3>
 
     <div class="analysis-box reveal">
-<div id="typing-output">
+      <div id="typing-output">
   {{ result.raw_analysis|safe }}
 </div>
     </div>
@@ -79,10 +101,11 @@
             Generate Resume
           </button>
         </a>
-
+      
     </div>
 
   </div>
+
 </section>
 
 <script>

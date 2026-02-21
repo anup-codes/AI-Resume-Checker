@@ -3,28 +3,60 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AI Resume Dashboard</title>
+    <title>A³ AI Resume Intelligence</title>
+
+    <link rel="icon" type="image/svg+xml" href="{% static 'a3-favicon.svg' %}">
     <link rel="stylesheet" href="{% static 'dashboard.css' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
+
 <body>
-<div class="main-container">
-    <!-- navbar + dashboard grid here -->
 
-
-<!-- NAVBAR -->
+<!-- ================= NAVBAR ================= -->
 <nav class="navbar">
-    <div class="logo">AI Resume Analyzer</div>
+    <div class="nav-left">
+        <div class="logo">
+            <div class="logo-mark">A<sup>3</sup></div>
+            <div class="logo-divider"></div>
+            <div class="logo-text">
+                <span>AI Resume</span>
+                <small>Intelligence</small>
+            </div>
+        </div>
+    </div>
+
     <div class="nav-right">
-        <span class="username">👤 {{ request.user.username }}</span>
-        <a href="{% url 'logout' %}"class="logout-btn">Logout</a>
+        <div class="user-info">
+            <span class="user-icon">👤</span>
+            <span class="username">{{ request.user.username }}</span>
+        </div>
+        <a href="{% url 'auth' %}" class="logout-btn">Logout</a>
     </div>
 </nav>
 
-<!-- DASHBOARD -->
+<div class="background-grid"></div>
+
+<!-- ================= MAIN CONTENT ================= -->
 <div class="dashboard">
 
-    <!-- Upload Card -->
+    <!-- HERO -->
+    <div class="hero">
+        <h1>
+            <span class="hero-brand">A³ </span>
+            Amplify Your Resume
+        </h1>
+
+        <p>
+            Apex your potential. Accelerate your career with AI precision.
+        </p>
+
+        <div class="hero-line"></div>
+
+        <p>
+            <span id="typing-text"></span>
+        </p>
+    </div>
+
+    <!-- UPLOAD RESUME -->
     <div class="card upload-card">
         <h2>Upload Resume</h2>
 
@@ -65,22 +97,25 @@
                 </select>
             </div>
 
-            <!-- Drag Upload -->
             <div class="upload-area">
-                <input type="file" name="resume" accept=".pdf, image/*" required>
-                <p>Drag & Drop Resume Here or Click to Upload</p>
+                <p>📄 Drag & Drop Resume Here</p>
+                <span>or click to upload</span>
+                <input type="file" name="resume" required>
+
+                <p class="section-subtitle">
+                    Optimize your resume for ATS and job roles.
+                </p>
             </div>
 
             <button type="submit" class="primary-btn">
                 Upload & Analyze
             </button>
-
         </form>
     </div>
 
-    <!-- History Card -->
-<div class="card history-card">
-<h2>Upload & Analysis History</h2>
+    <!-- UPLOAD HISTORY -->
+    <div class="card history-card">
+       <h2>Upload & Analysis History</h2>
 <table>
     <thead>
         <tr>
@@ -95,7 +130,7 @@
             <tr>
                 <td>{{ analysis.resume.resume.name|slice:"8:" }}</td>
                 <td>{{ analysis.final_score }}</td>
-                <td>{{ analysis.created_at|date:"M d, Y H:i" }}</td>
+                <td>{{ analysis.created_at|date:"M d, H:i" }}</td>
             </tr>
             {% endfor %}
         {% else %}
@@ -105,9 +140,23 @@
         {% endif %}
     </tbody>
 </table>
+    </div>
+
 </div>
 
+<script>
+const text = "AI-powered ATS analysis tailored to your target job role.";
+let i = 0;
 
-{% comment %} <script src="{% static 'dashboard.js' %}"></script> {% endcomment %}
+function typing() {
+  if (i < text.length) {
+    document.getElementById("typing-text").innerHTML += text.charAt(i);
+    i++;
+    setTimeout(typing, 30);
+  }
+}
+typing();
+</script>
+
 </body>
 </html>
