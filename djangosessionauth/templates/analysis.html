@@ -90,30 +90,11 @@
 
     <h3 class="analysis-title reveal">Full AI Analysis</h3>
 
-  <div class="analysis-sections">
-
-    <div class="analysis-card reveal matched">
-        <h4>Matched Skills</h4>
-        <div class="analysis-content">
-            {{ result.matched_skills|safe }}
-        </div>
-    </div>
-
-    <div class="analysis-card reveal missing">
-        <h4>Missing Skills</h4>
-        <div class="analysis-content">
-            {{ result.missing_skills|safe }}
-        </div>
-    </div>
-
-    <div class="analysis-card reveal weak">
-        <h4>Weak Alignment Areas</h4>
-        <div class="analysis-content">
-            {{ result.weak_areas|safe }}
-        </div>
-    </div>
-
+    <div class="analysis-box reveal">
+      <div id="typing-output">
+  {{ result.raw_analysis|safe }}
 </div>
+    </div>
     <div class="generate-section reveal">
         <a href="{% url 'generate_pdf' resume.id %}">
           <button type="button" class="generate-btn">
