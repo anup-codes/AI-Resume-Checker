@@ -4,11 +4,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ATS Analysis</title>
+<title>A³ AI Resume Intelligence</title>
+ <link rel="icon" type="image/svg+xml" href="{% static 'a3-favicon.svg' %}">
 <link rel="stylesheet" href="{% static 'analysis.css' %}">
 </head>
 
 <body>
+  <!-- ================= NAVBAR ================= -->
+<nav class="navbar">
+    <div class="nav-left">
+        <div class="logo">
+            <div class="logo-mark">A<sup>3</sup></div>
+            <div class="logo-divider"></div>
+            <div class="logo-text">
+                <span>AI Resume</span>
+                <small>Intelligence</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-right">
+        <div class="user-info">
+            <span class="user-icon">👤</span>
+            <span class="username">{{ request.user.username }}</span>
+        </div>
+        <a href="{% url 'dashboard' %}" class="logout-btn">Dashboard</a>
+    </div>
+</nav>
 
 <section class="ats-page">
 
@@ -30,47 +52,23 @@
       </div>
 
       <!-- RIGHT : BREAKDOWN -->
-      <ul class="score-breakdown reveal">
-
-        <li>
-          <span>Technical Skills</span>
-          <div class="bar" data-value="{{ result.breakdown.technical_skills }}"></div>
-          <span>{{ result.breakdown.technical_skills }}/20</span>
-        </li>
-
-        <li>
-          <span>Projects</span>
-          <div class="bar" data-value="{{ result.breakdown.projects }}"></div>
-          <span>{{ result.breakdown.projects }}/20</span>
-        </li>
-
-        <li>
-          <span>Experience Depth</span>
-          <div class="bar" data-value="{{ result.breakdown.experience_depth }}"></div>
-          <span>{{ result.breakdown.experience_depth }}/20</span>
-        </li>
-
-        <li>
-          <span>Keywords</span>
-          <div class="bar" data-value="{{ result.breakdown.keywords }}"></div>
-          <span>{{ result.breakdown.keywords }}/20</span>
-        </li>
-
-        <li>
-          <span>Presentation</span>
-          <div class="bar" data-value="{{ result.breakdown.presentation }}"></div>
-          <span>{{ result.breakdown.presentation }}/20</span>
-        </li>
-
-      </ul>
+    <ul class="score-breakdown reveal">
+    {% for param_name, param_val in result.breakdown.items %}
+      <li>
+        <span>{{ param_name }}</span>
+        <div class="bar" data-value="{{ param_val }}"></div>
+        <span>{{ param_val }}</span>
+      </li>
+    {% endfor %}
+    </ul>
 
     </div>
 
     <h3 class="analysis-title reveal">Full AI Analysis</h3>
 
     <div class="analysis-box reveal">
-<div id="typing-output">
-  {{ result.raw_analysis|safe }}
+      <div id="typing-output">
+  {{ analysis_html|safe }}
 </div>
     </div>
     <div class="generate-section reveal">
@@ -79,10 +77,11 @@
             Generate Resume
           </button>
         </a>
-
+      
     </div>
 
   </div>
+
 </section>
 
 <script>
@@ -130,7 +129,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
   document.querySelectorAll(".bar").forEach(bar => {
     const value = parseFloat(bar.dataset.value);
-    const percent = (value / 20) * 100;
+    const percent = value;
 
     const fill = document.createElement("div");
     fill.style.height = "100%";
