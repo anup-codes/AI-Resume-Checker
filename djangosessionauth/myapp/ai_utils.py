@@ -5,6 +5,31 @@ import json
 import markdown
 from google.genai import types
 
+# -----------------------------
+# Flexible score extraction
+# -----------------------------
+def extract_score_flexible(category_name: str, text: str) -> float:
+    """
+    Extracts a numeric score out of 100 from AI analysis text for a given category.
+    Flexible enough to handle:
+    - colon or dash
+    - extra spaces
+    - decimal numbers
+    - optional subcategories/notes after number
+    """
+    pattern = rf"{re.escape(category_name)}\s*[:\-]\s*(\d+\.?\d*)"
+    match = re.search(pattern, text, re.IGNORECASE)
+    if match:
+        return float(match.group(1))
+    else:
+        # fallback: try to find any number in the first line containing category_name
+        lines = text.splitlines()
+        for line in lines:
+            if category_name.lower() in line.lower():
+                nums = re.findall(r"\d+\.?\d*", line)
+                if nums:
+                    return float(nums[0])
+    return 0.0
 
 
 # -----------------------------------
@@ -13,7 +38,7 @@ from google.genai import types
 def analyze_resume(resume_text: str, target_role: str, experience_level: str, company_type: str) -> dict:
     """
     Sends resume to Gemini AI for ATS evaluation.
-    Extracts numeric scores using regex (no JSON parsing).
+    Extracts numeric scores via robust regex (supports decimals and colons/dashes).
     Computes weighted score in backend for stability.
     Returns:
         {
@@ -44,40 +69,33 @@ def analyze_resume(resume_text: str, target_role: str, experience_level: str, co
     client = genai.Client(api_key=api_key)
 
     # ----------------------------
-    # 1️⃣ Strict Human-Readable Prompt
+    # 1️⃣ Prompt (kept as-is)
     # ----------------------------
     prompt = f"""
-You are a professional ATS evaluator.
+        You are a professional ATS evaluator and resume coach.
+        Evaluate this resume for:
+        - Role: {target_role}
+        - Level: {experience_level}
+        - Company Type: {company_type}
 
-Evaluate this resume for:
-Role: {target_role}
-Level: {experience_level}
-Company Type: {company_type}
+        Provide a **final ATS score out of 100** and individual category scores **out of 100**:
 
-⚠️ STRICT OUTPUT FORMAT ⚠️
-Follow this EXACT structure:
+        1. Hard Skills & Keywords
+        2. Job Title & Level Matching
+        3. Education & Certifications
+        4. Formatting & Parseability
 
-
-Hard Skills & Keywords: <number>
-Job Title & Level Matching: <number>
-Education & Certifications: <number>
-Formatting & Parseability: <number>
-
-Matched Skills:
-<bullet points>
-
-Missing Skills:
-<bullet points>
-
-Weak Alignment Areas:
-<bullet points>
-
-Improvement Recommendations:
-<bullet points>
-
-Resume:
-{resume_text}
-"""
+        ⚠️ Format Requirements:
+        - Output in plain human-readable text
+        - Include all scores first
+        - Then show:
+            - Matched Skills
+            - Missing Skills
+            - Weak Alignment Areas
+            - Improvement Recommendations
+        Resume Text:
+        {resume_text}
+        """
 
     # ----------------------------
     # 2️⃣ Call Gemini (deterministic)
@@ -101,26 +119,28 @@ Resume:
         }
 
     # ----------------------------
-    # 3️⃣ Extract Scores via Regex
+    # 3️⃣ Robust Score Extraction
     # ----------------------------
     def extract_score(pattern, text):
         match = re.search(pattern, text, re.IGNORECASE)
         return float(match.group(1)) if match else 0.0
 
-    hard = extract_score(r"Hard Skills\s*&\s*Keywords:\s*(\d+)", raw_output)
-    title = extract_score(r"Job Title\s*&\s*Level Matching:\s*(\d+)", raw_output)
-    education = extract_score(r"Education\s*&\s*Certifications:\s*(\d+)", raw_output)
-    formatting = extract_score(r"Formatting\s*&\s*Parseability:\s*(\d+)", raw_output)
-
+    hard = extract_score_flexible("Hard Skills & Keywords", raw_output)
+    title = extract_score_flexible("Job Title & Level Matching", raw_output)
+    education = extract_score_flexible("Education & Certifications", raw_output)
+    formatting = extract_score_flexible("Formatting & Parseability", raw_output)
+        # ----------------------------
+    # 4️⃣ Prepare Breakdown for visuals (int, out of 100)
+    # ----------------------------
     breakdown = {
-    "Hard Skills & Keywords": int(round(hard * 10)),
-    "Job Title & Level Matching": int(round(title * 10)),
-    "Education & Certifications": int(round(education * 10)),
-    "Formatting & Parseability": int(round(formatting * 10)),
-}
+        "Hard Skills & Keywords": int(round(hard)),
+        "Job Title & Level Matching": int(round(title)),
+        "Education & Certifications": int(round(education)),
+        "Formatting & Parseability": int(round(formatting)),
+    }
 
     # ----------------------------
-    # 4️⃣ Compute Weighted Score (Backend Controlled)
+    # 5️⃣ Compute Weighted Score (Backend controlled)
     # ----------------------------
     weighted_score = (
         0.4 * hard +
@@ -128,9 +148,11 @@ Resume:
         0.2 * education +
         0.1 * formatting
     )
+    weighted_score = round(weighted_score, 2)
 
-    weighted_score = round(weighted_score * 10, 2)
-
+    # ----------------------------
+    # 6️⃣ Return full result
+    # ----------------------------
     return {
         "weighted_score": weighted_score,
         "breakdown": breakdown,
