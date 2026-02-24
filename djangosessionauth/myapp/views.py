@@ -11,7 +11,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from weasyprint import HTML
 import logging
 from django.conf import settings
-import re
+
 
 logger = logging.getLogger(__name__)
 
@@ -103,9 +103,8 @@ def dashboard_view(request):
 
     # ---------- FETCH HISTORY ----------
     history = ResumeAnalysis.objects.filter(
-        resume__user=request.user
-    ).select_related("resume").order_by("-created_at")
-
+    resume__user=request.user
+).select_related("resume").order_by("-created_at")[:10]
     context = {
         "history": history
     }
@@ -302,4 +301,5 @@ def logout_view(request):
     Logs out the user and redirects to the auth page.
     """
     logout(request)
+    request.session.flush()
     return redirect("auth")
