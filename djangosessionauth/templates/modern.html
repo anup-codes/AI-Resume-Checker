@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Classic Resume</title>
+
+    <!-- Django Static CSS -->
+    <link rel="stylesheet" href="{% static 'modern.css' %}">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="resume">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h1> ADITYA RAI </h1>
+        <p class="job-title">NALLA BEROJGAR</p>
+    </div>
+
+    <div class="main">
+
+        <!-- LEFT SIDE COLUMN -->
+        <div class="left">
+
+            <div class="section">
+                <h2>CONTACT</h2>
+                <ul>
+                    <li>+123-456-7890</li>
+                    <li>aditya@example.com</li>
+                    <li>Banaras, India</li>
+                    <li>www.example.com</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>EDUCATION</h2>
+
+                <div class="item">
+                    
+                    <p class="bold">KMCLU</p>
+                    <p>Masters Degree</p>
+                </div>
+
+                <div class="item">
+                   
+                    <p class="bold">School</p>
+                    <p>Bachelor's Degree</p>
+                    <p>GPA: 3.8 / 4.0</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>SKILLS</h2>
+                <ul>
+                    <li>Copy Paste</li>
+                    <li>ChatGPT Usage</li>
+                    <li>Teamwork</li>
+                    <li>Time Management</li>
+                    <li>Leadership</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>LANGUAGES</h2>
+                <ul>
+                    <li>English: Fluent</li>
+                    <li>Hindi: Fluent</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="right">
+
+            <div class="section">
+                <h2>PROFILE SUMMARY</h2>
+                <p>
+                    Engineering student with interest in web development,
+                    problem solving, and building modern applications.
+                </p>
+            </div>
+
+            <div class="section">
+                <h2>WORK EXPERIENCE</h2>
+
+                <div class="job">
+                    <div class="job-header">
+                        <span class="company">Company Name</span>
+                        <span class="date">2030 - PRESENT</span>
+                    </div>
+                    <p class="position">Marketing Manager</p>
+                    <ul>
+                        <li>Led development and implementation of strategies.</li>
+                        <li>Managed cross-channel campaigns.</li>
+                    </ul>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

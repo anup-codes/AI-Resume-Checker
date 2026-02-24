@@ -576,3 +576,21 @@ html::-webkit-scrollbar,
 body::-webkit-scrollbar {
     display: none;                /* Chrome, Safari */
 }
+
+.upload-area {
+    border: 2px dashed #c9a227;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.upload-area:hover {
+    background: rgba(255, 215, 0, 0.05);
+    border-color: #f4c430;
+}
+
+.upload-area input {
+    display: none;
+}

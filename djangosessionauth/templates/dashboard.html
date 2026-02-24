@@ -97,10 +97,11 @@
                 </select>
             </div>
 
-            <div class="upload-area">
-                <p>📄 Drag & Drop Resume Here</p>
+           <div class="upload-area" id="uploadArea">
+                <p id="uploadText">📄 Drag & Drop Resume Here</p>
                 <span>or click to upload</span>
-                <input type="file" name="resume" required>
+
+                <input type="file" name="resume" id="resumeInput" required hidden>
 
                 <p class="section-subtitle">
                     Optimize your resume for ATS and job roles.
@@ -160,6 +161,26 @@ function typing() {
   }
 }
 typing();
+
+const uploadArea = document.getElementById("uploadArea");
+const resumeInput = document.getElementById("resumeInput");
+const uploadText = document.getElementById("uploadText");
+
+// Click upload area → open file picker
+uploadArea.addEventListener("click", () => {
+    resumeInput.click();
+});
+
+// When file selected → show file name
+resumeInput.addEventListener("change", function () {
+    if (this.files.length > 0) {
+        const fileName = this.files[0].name;
+        uploadText.innerHTML = "✅ " + fileName;
+        uploadText.style.color = "#f4c430";
+        uploadText.style.fontWeight = "600";
+    }
+});
+
 </script>
 
 </body>
