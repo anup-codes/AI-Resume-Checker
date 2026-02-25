@@ -1,13 +1,17 @@
-{%load static%}
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Gemini Chatbot</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini AI Chatbot</title>
+     <link rel="icon" type="image/svg+xml" href="{% static 'a3-favicon.svg' %}">
     <link rel="stylesheet" href="{% static 'chatbot.css' %}">
 </head>
 <body>
 
-  <nav class="navbar">
+<!-- ================= NAVBAR ================= -->
+<nav class="navbar">
     <div class="nav-left">
         <div class="logo">
             <div class="logo-mark">A<sup>3</sup></div>
@@ -24,20 +28,35 @@
             <span class="user-icon">👤</span>
             <span class="username">{{ request.user.username }}</span>
         </div>
-        <a href="{% url 'dashboard' %}" class="dashboard-btn">Dashboard</a>
+        <a href="{% url 'dashboard' %}" class="dashboard-btn logout-btn">Dashboard</a>
     </div>
 </nav>
 
-    <h1>Gemini AI Chatbot</h1>
+<!-- ================= MAIN CONTENT ================= -->
+<div class="page-container">
 
-    <form method="POST">
-        {% csrf_token %}
-        <input type="text" name="user_input" placeholder="Ask something..." required>
-        <button type="submit">Send</button>
-    </form>
+    <h1 class="page-title"> AI Assistant</h1>
 
-    <h3>Response:</h3>
-    <p>{{ response }}</p>
+    <!-- INPUT CARD -->
+    <div class="card">
+        <form method="POST">
+            {% csrf_token %}
+            <input type="text" name="user_input" placeholder="Ask something..." required>
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <!-- RESPONSE CARD -->
+    {% if response %}
+    <div class="card response-box">
+        <h3 style="margin-bottom:15px; color:#D4AF37;">Response</h3>
+        <div class="ai-response">
+            {{ response|linebreaks }}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
 
 </body>
-</html>
+</html> 
