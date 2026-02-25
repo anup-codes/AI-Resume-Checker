@@ -1,0 +1,43 @@
+{%load static%}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gemini Chatbot</title>
+    <link rel="stylesheet" href="{% static 'chatbot.css' %}">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-left">
+        <div class="logo">
+            <div class="logo-mark">A<sup>3</sup></div>
+            <div class="logo-divider"></div>
+            <div class="logo-text">
+                <span>AI Resume</span>
+                <small>Intelligence</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-right">
+        <div class="user-info">
+            <span class="user-icon">👤</span>
+            <span class="username">{{ request.user.username }}</span>
+        </div>
+        <a href="{% url 'dashboard' %}" class="dashboard-btn">Dashboard</a>
+    </div>
+</nav>
+
+    <h1>Gemini AI Chatbot</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        <input type="text" name="user_input" placeholder="Ask something..." required>
+        <button type="submit">Send</button>
+    </form>
+
+    <h3>Response:</h3>
+    <p>{{ response }}</p>
+
+</body>
+</html>

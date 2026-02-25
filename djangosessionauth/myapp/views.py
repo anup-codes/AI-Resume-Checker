@@ -13,6 +13,9 @@ from .ai_utils import analyze_resume, generate_resume_content, render_analysis_h
 
 from weasyprint import HTML
 import logging
+from django.views.decorators.csrf import csrf_exempt
+from dotenv import load_dotenv
+import google.generativeai as genai
 
 logger = logging.getLogger(__name__)
 
@@ -276,3 +279,23 @@ def logout_view(request):
     logout(request)
     request.session.flush()
     return redirect("auth")
+
+@csrf_exempt
+def chatbot(request):
+    response_text = ""
+
+    if request.method == "POST":
+        user_input = request.POST.get("user_input")
+
+        try:
+            model = genai.GenerativeModel(
+                "gemini-2.5-flash",
+                system_instruction="You are a helpful AI tutor for beginners.")
+            response = model.generate_content(user_input)
+
+            response_text = response.text
+
+        except Exception as e:
+            response_text = f"Error: {str(e)}"
+
+    return render(request, "chatbot.html", {"response": response_text})

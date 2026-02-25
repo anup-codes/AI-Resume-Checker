@@ -599,3 +599,24 @@ body::-webkit-scrollbar {
 font-weight: bold;
 font-size: 20px;
 }
+.chatbot-btn{
+  padding: 9px 22px;
+    border-radius: 25px;
+    border: 1px solid rgba(212,175,55,0.4);
+
+    background: rgba(212,175,55,0.08);
+    backdrop-filter: blur(6px);
+
+    color: #D4AF37;
+    font-weight: 500;
+    text-decoration: none;
+
+    transition: all 0.3s ease;
+}
+.chatbot-btn:hover {
+    background: rgba(7, 110, 42, 0.15);
+    border: 1px solid rgba(22, 148, 22, 0.6);
+    color: #078f19;
+    box-shadow: 0 8px 25px rgba(2, 58, 2, 0.25);
+    transform: translateY(-2px);
+}
