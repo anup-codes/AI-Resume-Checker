@@ -521,11 +521,11 @@ input[type="file"]:focus {
   background-size: 40px 40px;
   z-index: -2;
 }
-.history-card {
-    max-height: 420px;   /* adjust height */
+/* .history-card {
+    max-height: 500px;   
     overflow-y: auto;
     padding-right: 10px;
-}
+} */
 /* ================= CUSTOM SCROLLBAR ================= */
 
 /* Chrome, Edge, Safari */
@@ -555,7 +555,7 @@ input[type="file"]:focus {
 body::-webkit-scrollbar { width: 8px; }
 /* Hide scrollbar but allow scroll */
 .history-card {
-    max-height: 420px;
+    max-height: 617px;
     overflow-y: auto;
 
     scrollbar-width: none;       /* Firefox */
