@@ -53,37 +53,13 @@
 
       <!-- RIGHT : BREAKDOWN -->
       <ul class="score-breakdown reveal">
-
+{% for param_name, param_val in result.breakdown.items %}
         <li>
-          <span>Technical Skills</span>
-          <div class="bar" data-value="{{ result.breakdown.technical_skills }}"></div>
-          <span>{{ result.breakdown.technical_skills }}/20</span>
+          <span>{{ param_name }}</span>
+          <div class="bar" data-value="{{ param_val }}"></div>
+          <span>{{ param_val }}</span>
         </li>
-
-        <li>
-          <span>Projects</span>
-          <div class="bar" data-value="{{ result.breakdown.projects }}"></div>
-          <span>{{ result.breakdown.projects }}/20</span>
-        </li>
-
-        <li>
-          <span>Experience Depth</span>
-          <div class="bar" data-value="{{ result.breakdown.experience_depth }}"></div>
-          <span>{{ result.breakdown.experience_depth }}/20</span>
-        </li>
-
-        <li>
-          <span>Keywords</span>
-          <div class="bar" data-value="{{ result.breakdown.keywords }}"></div>
-          <span>{{ result.breakdown.keywords }}/20</span>
-        </li>
-
-        <li>
-          <span>Presentation</span>
-          <div class="bar" data-value="{{ result.breakdown.presentation }}"></div>
-          <span>{{ result.breakdown.presentation }}/20</span>
-        </li>
-
+{% endfor %}
       </ul>
 
     </div>
@@ -92,7 +68,7 @@
 
     <div class="analysis-box reveal">
       <div id="typing-output">
-  {{ result.raw_analysis|safe }}
+  {{ analysis_html|safe }}
 </div>
     </div>
     <div class="generate-section reveal">
@@ -153,7 +129,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
   document.querySelectorAll(".bar").forEach(bar => {
     const value = parseFloat(bar.dataset.value);
-    const percent = (value / 20) * 100;
+    const percent = value;
 
     const fill = document.createElement("div");
     fill.style.height = "100%";
