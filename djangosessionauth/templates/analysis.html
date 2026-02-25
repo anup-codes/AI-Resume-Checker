@@ -52,15 +52,15 @@
       </div>
 
       <!-- RIGHT : BREAKDOWN -->
-      <ul class="score-breakdown reveal">
-{% for param_name, param_val in result.breakdown.items %}
-        <li>
-          <span>{{ param_name }}</span>
-          <div class="bar" data-value="{{ param_val }}"></div>
-          <span>{{ param_val }}</span>
-        </li>
-{% endfor %}
-      </ul>
+    <ul class="score-breakdown reveal">
+    {% for param_name, param_val in result.breakdown.items %}
+      <li>
+        <span>{{ param_name }}</span>
+        <div class="bar" data-value="{{ param_val }}"></div>
+        <span>{{ param_val }}</span>
+      </li>
+    {% endfor %}
+    </ul>
 
     </div>
 

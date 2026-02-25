@@ -9,10 +9,9 @@ from django.conf.urls.static import static
 
 # Define URL patterns
 urlpatterns = [
-    path("admin/", admin.site.urls),                     # Admin interface
-    path("auth/", auth_page, name="auth"),               # auth page
+    path("", auth_page, name="auth"),               # auth page
     path("dashboard/", dashboard_view, name="dashboard"),# dashboard page
-    path('resume/', upload_resume, name='upload_resume'),# upload resume
+    # path('resume/', upload_resume, name='upload_resume'),# upload resume
     path('analysis/', resume_analysis_view, name='analysis'),# upload resume
     path('logout/', logout_view, name='logout'),
     path("generate/<int:resume_id>/", generate_pdf, name="generate_pdf"),]
