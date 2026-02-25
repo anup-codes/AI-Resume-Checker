@@ -17,7 +17,7 @@ def extract_score_flexible(category_name: str, text: str) -> float:
     - decimal numbers
     - optional subcategories/notes after number
     """
-    pattern = rf"{re.escape(category_name)}\s*[:\-]\s*(\d+\.?\d*)"
+    pattern = rf"{re.escape(category_name)}\s*[:\-]\s*(\d+\.?\d*)\s*/100"
     match = re.search(pattern, text, re.IGNORECASE)
     if match:
         return float(match.group(1))
@@ -80,10 +80,10 @@ def analyze_resume(resume_text: str, target_role: str, experience_level: str, co
 
         Provide a **final ATS score out of 100** and individual category scores **out of 100**:
 
-        1. Hard Skills & Keywords
-        2. Job Title & Level Matching
-        3. Education & Certifications
-        4. Formatting & Parseability
+        Hard Skills & Keywords
+        Job Title & Level Matching
+        Education & Certifications
+        Formatting & Parseability
 
         ⚠️ Format Requirements:
         - Output in plain human-readable text
@@ -125,11 +125,18 @@ def analyze_resume(resume_text: str, target_role: str, experience_level: str, co
         match = re.search(pattern, text, re.IGNORECASE)
         return float(match.group(1)) if match else 0.0
 
-    hard = extract_score_flexible("Hard Skills & Keywords", raw_output)
-    title = extract_score_flexible("Job Title & Level Matching", raw_output)
-    education = extract_score_flexible("Education & Certifications", raw_output)
-    formatting = extract_score_flexible("Formatting & Parseability", raw_output)
-        # ----------------------------
+    # Find the main scores block
+    # Take only the part after the final ATS score appears
+    if "Final ATS Score:" in raw_output:
+        main_block = raw_output.split("Final ATS Score:")[1]  # everything after
+    else:
+        main_block = raw_output
+
+    hard = extract_score_flexible("Hard Skills & Keywords", main_block)
+    title = extract_score_flexible("Job Title & Level Matching", main_block)
+    education = extract_score_flexible("Education & Certifications", main_block)
+    formatting = extract_score_flexible("Formatting & Parseability", main_block)
+    # ----------------------------
     # 4️⃣ Prepare Breakdown for visuals (int, out of 100)
     # ----------------------------
     breakdown = {
