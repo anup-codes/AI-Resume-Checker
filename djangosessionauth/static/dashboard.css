@@ -594,3 +594,8 @@ body::-webkit-scrollbar {
 .upload-area input {
     display: none;
 }
+#uploadText{
+  color: #B9962E;
+font-weight: bold;
+font-size: 20px;
+}
