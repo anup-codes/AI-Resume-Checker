@@ -17,7 +17,7 @@ django-extensions==4.1
 fonttools==4.61.1
 frozenlist==1.8.0
 google-auth==2.48.0
-google-generativeai==0.3.0
+google-genai==1.64.0
 h11==0.16.0
 httpcore==1.0.9
 httpx==0.28.1
@@ -51,4 +51,5 @@ webencodings==0.5.1
 websockets==15.0.1
 yarl==1.22.0
 zopfli==0.4.1
+google-generativeai==0.3.0
 gunicorn==21.2.0
