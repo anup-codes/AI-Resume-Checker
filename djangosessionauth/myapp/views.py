@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.template.loader import render_to_string
 from django.conf import settings
-
+import os
 from .models import Resume, ResumeSurvey, ResumeAnalysis, GeneratedResume
 from .resume_utils import extract_resume_text
 from .ai_utils import analyze_resume, generate_resume_content, render_analysis_html
@@ -299,3 +299,10 @@ def chatbot(request):
             response_text = f"Error: {str(e)}"
 
     return render(request, "chatbot.html", {"response": response_text})
+
+api_key = os.getenv("GOOGLE_API_KEY")
+
+if not api_key:
+    raise Exception("Google API key not found")
+
+genai.configure(api_key=api_key)
