@@ -15,7 +15,7 @@ from weasyprint import HTML
 import logging
 from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
-import google.generativeai as genai
+import google as genai
 
 logger = logging.getLogger(__name__)
 
