@@ -300,7 +300,7 @@ def chatbot(request):
 
     return render(request, "chatbot.html", {"response": response_text})
 
-api_key = os.getenv("GOOGLE_API_KEY")
+api_key = os.environ.get("GOOGLE_API_KEY")
 
 if not api_key:
     raise Exception("Google API key not found")
