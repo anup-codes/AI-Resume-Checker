@@ -51,5 +51,5 @@ webencodings==0.5.1
 websockets==15.0.1
 yarl==1.22.0
 zopfli==0.4.1
-# google-generativeai==0.3.0
+google-generativeai==0.3.0
 gunicorn==21.2.0
