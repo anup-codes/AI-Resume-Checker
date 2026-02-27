@@ -15,8 +15,8 @@ from weasyprint import HTML
 import logging
 from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
-# import google.generativeai as genai
-import google as genai
+import google.generativeai as genai
+
 logger = logging.getLogger(__name__)
 
 
@@ -300,7 +300,7 @@ def chatbot(request):
 
     return render(request, "chatbot.html", {"response": response_text})
 
-api_key = os.environ.get("GOOGLE_API_KEY")
+api_key = os.getenv("GOOGLE_API_KEY")
 
 if not api_key:
     raise Exception("Google API key not found")
