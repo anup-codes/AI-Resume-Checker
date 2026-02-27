@@ -11,12 +11,13 @@ from .models import Resume, ResumeSurvey, ResumeAnalysis, GeneratedResume
 from .resume_utils import extract_resume_text
 from .ai_utils import analyze_resume, generate_resume_content, render_analysis_html
 
-from weasyprint import HTML
+from weasyprint import HTML,CSS
 import logging
 from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
 import google.generativeai as genai
-
+import os
+import re
 logger = logging.getLogger(__name__)
 
 
@@ -210,68 +211,87 @@ def resume_analysis_view(request):
 # -----------------------------------
 # Generate Optimized Resume PDF
 # -----------------------------------
+from django.template.loader import render_to_string
+from django.http import HttpResponse, HttpResponseBadRequest
+from weasyprint import HTML
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import login_required
+
 @login_required
 def generate_pdf(request, resume_id):
+    # 1️⃣ Get the resume object
+    resume = get_object_or_404(Resume, id=resume_id, user=request.user)
 
-    resume = get_object_or_404(
-        Resume,
-        id=resume_id,
-        user=request.user
-    )
-
+    # 2️⃣ Get survey data
     survey = ResumeSurvey.objects.filter(resume=resume).first()
     if not survey:
         return HttpResponseBadRequest("Survey data not found.")
 
+    # 3️⃣ Check if resume file exists
     if not resume.resume:
         return HttpResponseBadRequest("Resume file missing.")
 
-    resume_text = extract_resume_text(resume.resume.path)
+    # 4️⃣ Check if we already have a generated resume (cached)
+    generated_resume = GeneratedResume.objects.filter(resume=resume).first()
+    if generated_resume:
+        html_content = generated_resume.html_content
+    else:
+        # 5️⃣ Extract text from uploaded resume
+        resume_text = extract_resume_text(resume.resume.path)
+        if not resume_text.strip():
+            return HttpResponseBadRequest("Could not extract readable text.")
 
-    if not resume_text.strip():
-        return HttpResponseBadRequest("Could not extract readable text.")
+        # 6️⃣ Get analysis
+        analysis_obj = ResumeAnalysis.objects.filter(resume=resume).first()
+        if not analysis_obj:
+            return HttpResponseBadRequest("Analysis not found.")
 
-    analysis_obj = ResumeAnalysis.objects.filter(resume=resume).first()
-    if not analysis_obj:
-        return HttpResponseBadRequest("Analysis not found.")
+        # 7️⃣ Call AI API to generate HTML content
+        try:
+            new_html_content = generate_resume_content(
+                resume_text=resume_text,
+                survey_data={
+                    "target_role": survey.target_role,
+                    "experience_level": survey.experience_level,
+                    "company_type": survey.company_type
+                },
+                analysis_text=analysis_obj.full_analysis or ""
+            )
 
-    new_html_content = generate_resume_content(
-        resume_text=resume_text,
-        survey_data={
-            "target_role": survey.target_role,
-            "experience_level": survey.experience_level,
-            "company_type": survey.company_type
-        },
-        analysis_text=analysis_obj.full_analysis or ""
-    )
+            html_content = (
+                new_html_content.get("html_content", "")
+                if isinstance(new_html_content, dict)
+                else new_html_content
+            )
 
-    html_content = (
-        new_html_content.get("html_content", "")
-        if isinstance(new_html_content, dict)
-        else new_html_content
-    )
+            # Clean up Markdown backticks
+            html_content = html_content.replace("```", "")
 
-    generated_resume, _ = GeneratedResume.objects.get_or_create(
-        resume=resume
-    )
-    generated_resume.html_content = html_content
-    generated_resume.save()
+        except Exception as e:
+            # Handle free-tier quota exceeded error gracefully
+            if "RESOURCE_EXHAUSTED" in str(e):
+                return HttpResponseBadRequest(
+                    "Free quota exceeded. Please try again later."
+                )
+            else:
+                return HttpResponseBadRequest(f"AI generation failed: {str(e)}")
 
-    html_string = render_to_string(
-        "resume_temp.html",
-        {"resume_html": html_content}
-    )
+        # 8️⃣ Cache the generated HTML for future use
+        GeneratedResume.objects.create(resume=resume, html_content=html_content)
 
-    pdf_file = HTML(string=html_string).write_pdf()
+    # 9️⃣ Render PDF template
+    html_string = render_to_string("resume_temp.html", {"resume_html": html_content})
 
+    # 10️⃣ Generate PDF using inline styles only (no external CSS)
+    try:
+        pdf_file = HTML(string=html_string).write_pdf()
+    except Exception as e:
+        return HttpResponseBadRequest(f"PDF generation failed: {str(e)}")
+
+    # 11️⃣ Return PDF as response
     response = HttpResponse(pdf_file, content_type="application/pdf")
-    response["Content-Disposition"] = (
-        "attachment; filename=optimized_resume.pdf"
-    )
-
+    response["Content-Disposition"] = "attachment; filename=optimized_resume.pdf"
     return response
-
-
 # -----------------------------------
 # Logout
 # -----------------------------------
